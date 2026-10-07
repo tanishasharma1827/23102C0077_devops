@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${appName}">Sports Facility Booking System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1 id="app-title" th:text="${appName}">Sports Facility Booking System</h1>
+    <p>Book badminton courts, football turfs and more in a few clicks.</p>
+</header>
+<main>
+    <section class="card">
+        <h2>Coming soon</h2>
+        <ul>
+            <li>Register as a user</li>
+            <li>View available slots</li>
+            <li>Request a booking</li>
+            <li>Get confirmation or cancel</li>
+            <li>Track your booking status</li>
+        </ul>
+    </section>
+</main>
+</body>
+</html>
