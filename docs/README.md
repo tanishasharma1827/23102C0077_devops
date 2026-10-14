@@ -21,7 +21,7 @@ This folder has one document for each task. Read them in order.
 | 10 | Continuous Testing in Jenkins | - | Pending |
 | 11 | Docker Image and Container Lifecycle | [task-11-docker.md](task-11-docker.md) | Done |
 | 12 | Jenkins-Docker Continuous Deployment | - | Pending |
-| 13 | Configuration Management Script | - | Pending |
+| 13 | Configuration Management Script | [task-13-configuration-management.md](task-13-configuration-management.md) | Done |
 | 14 | Automated Provisioning and Reliability Validation | - | Pending |
 
 ## How to read the diagrams
