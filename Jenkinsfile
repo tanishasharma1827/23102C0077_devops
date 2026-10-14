@@ -1,5 +1,6 @@
 // Jenkinsfile - Sports Facility Booking System
 // Task 8: pipeline as code - checkout, build, package, deploy to Tomcat (parameterised environment).
+// Task 10: Selenium tests on the deployed server; failed tests stop the production deployment.
 // The Jenkins agent is Windows, so shell steps use 'bat'.
 
 pipeline {
@@ -77,6 +78,39 @@ pipeline {
                 }
                 bat "curl -s ${env.APP_URL}/actuator/info"
                 echo "Deployed to Tomcat (${params.DEPLOY_ENV}): ${env.APP_URL}/"
+            }
+        }
+
+        // Task 10: browser tests against the server that was just deployed.
+        // If any Selenium test fails, this stage fails and the production stage below is skipped.
+        stage('Selenium Tests') {
+            steps {
+                bat "mvn -B verify -Pselenium -Dapp.baseUrl=${env.APP_URL} -Dtest=NoUnitTests -Dsurefire.failIfNoSpecifiedTests=false"
+            }
+            post {
+                always {
+                    junit 'target/failsafe-reports/*.xml'
+                    archiveArtifacts artifacts: 'target/selenium-screenshots/*.png', allowEmptyArchive: true
+                }
+                failure {
+                    echo 'Selenium tests FAILED - deployment to production is blocked. See Tests and the archived screenshots.'
+                }
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                bat """
+                    docker rm -f tomcat-production 2>nul
+                    docker run -d --name tomcat-production -p 8086:8080 ^
+                        -e CATALINA_OPTS="-Dinfo.app.environment=production -Dinfo.app.build=${env.BUILD_NUMBER}" ^
+                        tomcat:10.1-jdk17-temurin
+                    docker cp target\\sports-booking.war tomcat-production:/usr/local/tomcat/webapps/sports-booking.war
+                """
+                script {
+                    waitForHealth('http://localhost:8086/sports-booking/actuator/health')
+                }
+                echo 'Production updated: http://localhost:8086/sports-booking/'
             }
         }
     }

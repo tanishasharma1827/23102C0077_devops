@@ -70,13 +70,18 @@ class UserJourneysUiIT extends BaseUiTest {
     @DisplayName("TC-05 Manager confirms a request, then the player cancels it and the slot is free again")
     void tc05_confirmThenCancel() {
         String email = uniqueEmail("meera");
-        register("Meera Joshi", email, "9000000003");
+        String player = "Meera " + email.substring(6, 14);   // unique name, so the manager confirms this booking
+        register(player, email, "9000000003");
         String time = bookFirstFreeSlot(1, DAY_AFTER);
         signOut();
 
         signIn(MANAGER_EMAIL);
         find("#nav-manager").click();
-        find("button[id^='confirm-']").click();
+        find("#requests-table");
+        driver.findElements(org.openqa.selenium.By.cssSelector("#requests-table tbody tr")).stream()
+                .filter(r -> r.getText().contains(player))
+                .findFirst().orElseThrow()
+                .findElement(org.openqa.selenium.By.cssSelector("button[id^='confirm-']")).click();
         assertThat(flashMessage()).contains("confirmed");
         signOut();
 
