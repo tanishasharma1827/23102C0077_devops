@@ -17,12 +17,22 @@
     <p id="no-slots" th:if="${#lists.isEmpty(slots)}">No slots available</p>
     <table id="slots-table" th:unless="${#lists.isEmpty(slots)}">
         <thead>
-        <tr><th>Time</th><th>Status</th></tr>
+        <tr><th>Time</th><th>Status</th><th>Action</th></tr>
         </thead>
         <tbody>
-        <tr th:each="s : ${slots}" th:id="'slot-' + ${s.id}">
+        <tr th:each="s : ${slots}" th:id="'slot-' + ${s.id}"
+            th:with="taken=${#sets.contains(takenSlotIds, s.id)}">
             <td th:text="${s.label}">06:00 - 07:00</td>
-            <td>Available</td>
+            <td class="status" th:text="${taken} ? 'Booked' : 'Available'">Available</td>
+            <td>
+                <form th:if="${!taken and currentUser != null}" th:action="@{/bookings}" method="post" class="inline">
+                    <input type="hidden" name="slotId" th:value="${s.id}">
+                    <input type="hidden" name="facilityId" th:value="${facility.id}">
+                    <input type="hidden" name="date" th:value="${date}">
+                    <button th:id="'book-' + ${s.id}" type="submit" class="button">Book</button>
+                </form>
+                <a th:if="${!taken and currentUser == null}" th:href="@{/signin}">Sign in to book</a>
+            </td>
         </tr>
         </tbody>
     </table>

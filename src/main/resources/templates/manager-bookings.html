@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head('Pending requests')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main>
+    <div th:replace="~{fragments :: messages}"></div>
+    <h2>Pending booking requests</h2>
+    <p id="no-requests" th:if="${#lists.isEmpty(bookings)}">No pending requests.</p>
+    <table id="requests-table" th:unless="${#lists.isEmpty(bookings)}">
+        <thead>
+        <tr><th>#</th><th>Player</th><th>Facility</th><th>Date</th><th>Time</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="b : ${bookings}" th:id="'request-' + ${b.id}">
+            <td th:text="${b.id}">1</td>
+            <td th:text="${b.user.name}">Player</td>
+            <td th:text="${b.slot.facility.name}">Badminton Court 1</td>
+            <td th:text="${b.slot.date}">2026-10-14</td>
+            <td th:text="${b.slot.label}">06:00 - 07:00</td>
+            <td>
+                <form th:action="@{/bookings/{id}/confirm(id=${b.id})}" method="post" class="inline">
+                    <button th:id="'confirm-' + ${b.id}" type="submit" class="button">Confirm</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
