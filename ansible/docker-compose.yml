@@ -1,0 +1,32 @@
+# Lab environment for Tasks 13 and 14:
+#   control - runs Ansible
+#   target  - clean Ubuntu "server" that Ansible configures over SSH
+#
+# Start:  docker compose -f ansible/docker-compose.yml up -d --build
+# Run:    docker compose -f ansible/docker-compose.yml exec control ansible-playbook site.yml
+name: sports-ansible
+
+services:
+  control:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.control
+    volumes:
+      - ./:/ansible                 # playbooks, inventory, templates
+      - ../target:/artifacts:ro     # WAR files built by Maven
+      - keys:/keys
+    environment:
+      ANSIBLE_CONFIG: /ansible/ansible.cfg
+
+  target:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.target
+    hostname: app-server-1
+    volumes:
+      - keys:/keys:ro
+    ports:
+      - "8095:8080"                 # app on the target server -> http://localhost:8095
+
+volumes:
+  keys:
