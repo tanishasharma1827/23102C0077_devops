@@ -1,6 +1,7 @@
 // Jenkinsfile - Sports Facility Booking System
 // Task 8: pipeline as code - checkout, build, package, deploy to Tomcat (parameterised environment).
 // Task 10: Selenium tests on the deployed server; failed tests stop the production deployment.
+// Task 12: build a versioned Docker image, push it to the registry and deploy a fresh production container.
 // The Jenkins agent is Windows, so shell steps use 'bat'.
 
 pipeline {
@@ -30,6 +31,11 @@ pipeline {
         PATH = "C:\\Users\\TANISHA SHARMA\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
         TOMCAT_CONTAINER = "tomcat-${params.DEPLOY_ENV}"
         APP_URL = "http://localhost:${params.TOMCAT_PORT}/sports-booking"
+        REGISTRY = 'localhost:5000'                       // local Docker registry (registry:2 container)
+        IMAGE = "${REGISTRY}/sports-booking"
+        IMAGE_TAG = "1.0.0-b${env.BUILD_NUMBER}"          // version + Jenkins build number
+        PROD_CONTAINER = 'sports-booking-prod'
+        PROD_URL = 'http://localhost:8090'
     }
 
     stages {
@@ -98,26 +104,44 @@ pipeline {
             }
         }
 
-        stage('Deploy to Production') {
+        stage('Docker Build') {
             steps {
+                bat "docker build -t %IMAGE%:%IMAGE_TAG% -t %IMAGE%:latest ."
+                bat "docker images %IMAGE%"
+            }
+        }
+
+        stage('Push to Registry') {
+            steps {
+                bat "docker push %IMAGE%:%IMAGE_TAG%"
+                bat "docker push %IMAGE%:latest"
+                bat "curl -s http://%REGISTRY%/v2/sports-booking/tags/list"
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                // Pull the exact version from the registry and replace the running production container
                 bat """
-                    docker rm -f tomcat-production 2>nul
-                    docker run -d --name tomcat-production -p 8086:8080 ^
-                        -e CATALINA_OPTS="-Dinfo.app.environment=production -Dinfo.app.build=${env.BUILD_NUMBER}" ^
-                        tomcat:10.1-jdk17-temurin
-                    docker cp target\\sports-booking.war tomcat-production:/usr/local/tomcat/webapps/sports-booking.war
+                    docker pull %IMAGE%:%IMAGE_TAG%
+                    docker rm -f %PROD_CONTAINER% 2>nul
+                    docker run -d --name %PROD_CONTAINER% --restart unless-stopped -p 8090:8080 ^
+                        -e JAVA_OPTS="-Xmx384m -Dinfo.app.environment=production -Dinfo.app.build=${env.BUILD_NUMBER} -Dinfo.app.image=%IMAGE%:%IMAGE_TAG%" ^
+                        %IMAGE%:%IMAGE_TAG%
                 """
                 script {
-                    waitForHealth('http://localhost:8086/sports-booking/actuator/health')
+                    waitForHealth("${env.PROD_URL}/actuator/health")
                 }
-                echo 'Production updated: http://localhost:8086/sports-booking/'
+                bat "docker ps --filter name=%PROD_CONTAINER%"
+                bat "curl -s %PROD_URL%/actuator/info"
+                echo "Production container running ${env.IMAGE}:${env.IMAGE_TAG} at ${env.PROD_URL}/"
             }
         }
     }
 
     post {
         success {
-            echo "Pipeline OK - build #${env.BUILD_NUMBER} is running at ${env.APP_URL}/"
+            echo "Pipeline OK - build #${env.BUILD_NUMBER}: staging ${env.APP_URL}/ , production ${env.PROD_URL}/ (${env.IMAGE}:${env.IMAGE_TAG})"
         }
         failure {
             echo 'Pipeline FAILED - see the stage that is red.'
