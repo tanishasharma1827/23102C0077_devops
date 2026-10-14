@@ -13,7 +13,7 @@ This folder has one document for each task. Read them in order.
 | 2 | Agile Planning and DevOps Workflow | [task-02-agile-planning.md](task-02-agile-planning.md) | Done |
 | 3 | Requirements, Architecture and Technology Setup | [task-03-requirements-architecture.md](task-03-requirements-architecture.md) | Done |
 | 4 | Git and GitHub Repository Initialization | [task-04-git-github-setup.md](task-04-git-github-setup.md) | Done |
-| 5 | Feature Development with Branching | - | Pending |
+| 5 | Feature Development with Branching | [task-05-feature-branching.md](task-05-feature-branching.md) | Done |
 | 6 | MVP Completion and Git Collaboration | - | Pending |
 | 7 | Jenkins Installation and CI Job | - | Pending |
 | 8 | Pipeline as Code and Server Deployment | - | Pending |

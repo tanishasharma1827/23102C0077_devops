@@ -28,7 +28,7 @@ mvn clean package        # build and run tests
 mvn spring-boot:run      # start the app
 ```
 
-Open http://localhost:8080. The health check is at http://localhost:8080/actuator/health.
+Open http://localhost:8081 (8081 locally because Jenkins uses 8080). The health check is at http://localhost:8081/actuator/health.
 
 ## Documentation
 

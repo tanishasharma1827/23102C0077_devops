@@ -224,14 +224,14 @@ Then open in a browser:
 
 | URL | Expected result |
 |-----|-----------------|
-| http://localhost:8080/ | Home page "Sports Facility Booking System" |
-| http://localhost:8080/actuator/health | `{"status":"UP"}` |
-| http://localhost:8080/h2-console | Database console (JDBC URL: `jdbc:h2:mem:sportsdb`) |
+| http://localhost:8081/ | Home page "Sports Facility Booking System" |
+| http://localhost:8081/actuator/health | `{"status":"UP"}` |
+| http://localhost:8081/h2-console | Database console (JDBC URL: `jdbc:h2:mem:sportsdb`) |
 
 ### 7.3 Evidence of working local setup
 
 > Add your screenshots here:
 > 1. `java -version` and `mvn -v` output
 > 2. `mvn clean package` showing **BUILD SUCCESS**
-> 3. Browser showing the home page at `localhost:8080`
+> 3. Browser showing the home page at `localhost:8081`
 > 4. Browser showing `/actuator/health` → `UP`
