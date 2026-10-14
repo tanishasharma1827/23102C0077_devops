@@ -16,7 +16,7 @@ This folder has one document for each task. Read them in order.
 | 5 | Feature Development with Branching | [task-05-feature-branching.md](task-05-feature-branching.md) | Done |
 | 6 | MVP Completion and Git Collaboration | [task-06-mvp-git-collaboration.md](task-06-mvp-git-collaboration.md) | Done |
 | 7 | Jenkins Installation and CI Job | [task-07-jenkins-ci.md](task-07-jenkins-ci.md) | Done |
-| 8 | Pipeline as Code and Server Deployment | - | Pending |
+| 8 | Pipeline as Code and Server Deployment | [task-08-pipeline-as-code.md](task-08-pipeline-as-code.md) | Done |
 | 9 | Selenium Test Design and Local Execution | [task-09-selenium-tests.md](task-09-selenium-tests.md) | Done |
 | 10 | Continuous Testing in Jenkins | - | Pending |
 | 11 | Docker Image and Container Lifecycle | [task-11-docker.md](task-11-docker.md) | Done |
