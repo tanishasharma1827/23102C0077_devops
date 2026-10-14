@@ -14,7 +14,7 @@ This folder has one document for each task. Read them in order.
 | 3 | Requirements, Architecture and Technology Setup | [task-03-requirements-architecture.md](task-03-requirements-architecture.md) | Done |
 | 4 | Git and GitHub Repository Initialization | [task-04-git-github-setup.md](task-04-git-github-setup.md) | Done |
 | 5 | Feature Development with Branching | [task-05-feature-branching.md](task-05-feature-branching.md) | Done |
-| 6 | MVP Completion and Git Collaboration | - | Pending |
+| 6 | MVP Completion and Git Collaboration | [task-06-mvp-git-collaboration.md](task-06-mvp-git-collaboration.md) | Done |
 | 7 | Jenkins Installation and CI Job | - | Pending |
 | 8 | Pipeline as Code and Server Deployment | - | Pending |
 | 9 | Selenium Test Design and Local Execution | - | Pending |
