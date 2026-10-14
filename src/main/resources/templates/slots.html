@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head('Available slots')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main>
+    <div th:replace="~{fragments :: messages}"></div>
+    <h2 th:text="${facility.name}">Badminton Court 1</h2>
+
+    <form id="date-form" th:action="@{/slots}" method="get" class="inline-form">
+        <input type="hidden" name="facilityId" th:value="${facility.id}">
+        <label for="date">Date</label>
+        <input id="date" type="date" name="date" th:value="${date}">
+        <button id="date-submit" type="submit" class="button">Show</button>
+    </form>
+
+    <p id="no-slots" th:if="${#lists.isEmpty(slots)}">No slots available</p>
+    <table id="slots-table" th:unless="${#lists.isEmpty(slots)}">
+        <thead>
+        <tr><th>Time</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="s : ${slots}" th:id="'slot-' + ${s.id}">
+            <td th:text="${s.label}">06:00 - 07:00</td>
+            <td>Available</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
