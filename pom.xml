@@ -24,6 +24,8 @@
         <!-- Empty = start the app inside the test; set to e.g. http://localhost:8082/sports-booking to test a deployed server -->
         <app.baseUrl></app.baseUrl>
         <selenium.headless>true</selenium.headless>
+        <!-- Newer Selenium so Selenium Manager downloads a chromedriver that matches the installed Chrome -->
+        <selenium.version>4.51.0</selenium.version>
     </properties>
 
     <dependencies>
