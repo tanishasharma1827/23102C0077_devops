@@ -28,3 +28,10 @@ This folder has one document for each task. Read them in order.
 
 Diagrams are written in **Mermaid**. GitHub draws them as pictures automatically
 when you open the `.md` file on github.com. No extra tool is needed.
+
+## Note on commit IDs
+
+On 14 October 2026 the commit messages in this repository were cleaned up, which
+gave every commit a new ID. The code and history are otherwise unchanged. Jenkins
+screenshots taken before that (Tasks 7, 8, 10 and 12) therefore show the earlier
+commit IDs, for example `b478d5f` or `8a3a51b`. The commit messages are the same.
