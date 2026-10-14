@@ -13,7 +13,7 @@
 
     <groupId>com.sportsbooking</groupId>
     <artifactId>sports-booking</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <!-- WAR so the same build can run standalone or be deployed to Tomcat (Task 8) -->
     <packaging>war</packaging>
     <name>Sports Facility Booking System</name>
@@ -21,6 +21,11 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- Empty = start the app inside the test; set to e.g. http://localhost:8082/sports-booking to test a deployed server -->
+        <app.baseUrl></app.baseUrl>
+        <selenium.headless>true</selenium.headless>
+        <!-- Newer Selenium so Selenium Manager downloads a chromedriver that matches the installed Chrome -->
+        <selenium.version>4.51.0</selenium.version>
     </properties>
 
     <dependencies>
@@ -59,7 +64,45 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Selenium WebDriver for browser (UI) tests - Task 9 -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- mvn verify -Pselenium : runs the *UiIT browser tests with the Failsafe plugin -->
+        <profile>
+            <id>selenium</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/*UiIT.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <app.baseUrl>${app.baseUrl}</app.baseUrl>
+                                <selenium.headless>${selenium.headless}</selenium.headless>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>sports-booking</finalName>

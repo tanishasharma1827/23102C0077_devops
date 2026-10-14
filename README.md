@@ -28,7 +28,25 @@ mvn clean package        # build and run tests
 mvn spring-boot:run      # start the app
 ```
 
-Open http://localhost:8080. The health check is at http://localhost:8080/actuator/health.
+Open http://localhost:8081 (8081 locally because Jenkins uses 8080). The health check is at http://localhost:8081/actuator/health.
+
+## CI/CD pipeline
+
+Every push to `develop` is picked up by Jenkins (SCM polling) and runs the [`Jenkinsfile`](Jenkinsfile):
+
+```text
+Checkout → Build → Unit Tests → Package → Deploy to Tomcat (staging)
+        → Selenium Tests → Docker Build → Push to Registry → Deploy Container (production)
+```
+
+| What | Where |
+|------|-------|
+| Jenkins | http://localhost:8080 |
+| App (local `mvn spring-boot:run`) | http://localhost:8081 |
+| Staging (Tomcat) | http://localhost:8082/sports-booking/ |
+| Production (Docker container) | http://localhost:8090 |
+| Docker registry | http://localhost:5000/v2/_catalog |
+| Ansible-provisioned server | http://localhost:8095 |
 
 ## Documentation
 

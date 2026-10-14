@@ -1,0 +1,12 @@
+# Files used inside Linux containers must keep LF line endings, even on Windows checkouts
+*.sh            text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.j2            text eol=lf
+*.cfg           text eol=lf
+*.ini           text eol=lf
+Dockerfile*     text eol=lf
+Jenkinsfile     text eol=lf
+ansible/**      text eol=lf
+*.png           binary
+*.war           binary

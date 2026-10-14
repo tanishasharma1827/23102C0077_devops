@@ -1,0 +1,16 @@
+# Configuration specification for every server in [app_servers] (Task 13)
+app_name: sports-booking
+app_user: sportsapp
+app_group: sportsapp
+app_home: /opt/sports-booking
+app_config_dir: /etc/sports-booking
+app_port: 8080
+java_opts: "-Xms128m -Xmx384m"
+
+app_packages:
+  - openjdk-17-jre-headless   # Java runtime
+  - curl                      # health checks
+  - ca-certificates
+
+health_url: "http://localhost:{{ app_port }}/actuator/health"
+info_url: "http://localhost:{{ app_port }}/actuator/info"

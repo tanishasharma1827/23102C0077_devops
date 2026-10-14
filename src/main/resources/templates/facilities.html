@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head('Facilities')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main>
+    <div th:replace="~{fragments :: messages}"></div>
+    <h2>Facilities</h2>
+    <div class="grid">
+        <section class="card facility" th:each="f : ${facilities}">
+            <h3 th:text="${f.name}">Badminton Court 1</h3>
+            <p class="muted" th:text="${f.type} + ' | ' + ${f.location}">BADMINTON | Indoor Hall</p>
+            <a class="button" th:id="'view-slots-' + ${f.id}" th:href="@{/slots(facilityId=${f.id})}">View slots</a>
+        </section>
+    </div>
+</main>
+</body>
+</html>

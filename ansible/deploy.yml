@@ -1,0 +1,119 @@
+---
+# Task 14: provision the server (site.yml) and deploy a versioned release.
+# After switching to the new release the app must pass a health check,
+# otherwise Ansible automatically rolls back to the previous release.
+#
+#   ansible-playbook deploy.yml -e app_version=1.0.0
+#   ansible-playbook deploy.yml -e app_version=1.1.0 -e war_file=/artifacts/other.war
+
+- name: Provision the server
+  ansible.builtin.import_playbook: site.yml
+
+- name: Deploy a release with health check and automatic rollback
+  hosts: app_servers
+  become: true
+  vars:
+    war_file: /artifacts/sports-booking.war
+    health_retries: 24          # 24 x 5 s = up to 2 minutes for the app to start
+    new_release: "{{ app_home }}/releases/{{ app_name }}-{{ app_version }}.war"
+
+  tasks:
+    - name: Check that a version number was given
+      ansible.builtin.assert:
+        that: app_version is defined
+        fail_msg: "Run with -e app_version=<version>"
+
+    - name: Find the release that is live right now
+      ansible.builtin.stat:
+        path: "{{ app_home }}/current.war"
+        follow: false
+      register: current
+
+    - name: Remember it as the previous release
+      ansible.builtin.set_fact:
+        previous_release: "{{ current.stat.lnk_source | default('') }}"
+
+    - name: Upload release {{ app_version }}
+      ansible.builtin.copy:
+        src: "{{ war_file }}"
+        dest: "{{ new_release }}"
+        owner: root
+        group: "{{ app_group }}"
+        mode: "0644"
+
+    - name: Switch current.war to release {{ app_version }}
+      ansible.builtin.file:
+        src: "{{ new_release }}"
+        dest: "{{ app_home }}/current.war"
+        state: link
+        force: true
+      register: switched
+
+    - name: Restart the app on the new release
+      ansible.builtin.command: "/etc/init.d/{{ app_name }} restart"
+      when: switched is changed
+
+    - name: Make sure the app is running
+      ansible.builtin.command: "/etc/init.d/{{ app_name }} start"
+      register: start_result
+      changed_when: "'already running' not in start_result.stdout"
+
+    - name: Health check and rollback
+      block:
+        - name: Wait until /actuator/health reports UP
+          ansible.builtin.uri:
+            url: "{{ health_url }}"
+            return_content: true
+          register: health
+          until: health.status == 200 and health.json.status == 'UP'
+          retries: "{{ health_retries }}"
+          delay: 5
+
+        - name: Read the running version
+          ansible.builtin.uri:
+            url: "{{ info_url }}"
+          register: info
+
+        - name: Report success
+          ansible.builtin.debug:
+            msg: "Release {{ app_version }} is LIVE and HEALTHY on {{ inventory_hostname }}: {{ info.json }}"
+
+      rescue:
+        - name: Show the last lines of the app log
+          ansible.builtin.command: "tail -n 6 {{ app_home }}/logs/app.log"
+          register: app_log
+          changed_when: false
+
+        - name: Print the log
+          ansible.builtin.debug:
+            var: app_log.stdout_lines
+
+        - name: Stop if there is no earlier release to go back to
+          ansible.builtin.fail:
+            msg: "Release {{ app_version }} failed the health check and there is no previous release."
+          when: previous_release == '' or previous_release == new_release
+
+        - name: ROLLBACK - switch current.war back to {{ previous_release | basename }}
+          ansible.builtin.file:
+            src: "{{ previous_release }}"
+            dest: "{{ app_home }}/current.war"
+            state: link
+            force: true
+
+        - name: ROLLBACK - restart on the previous release
+          ansible.builtin.command: "/etc/init.d/{{ app_name }} restart"
+
+        - name: ROLLBACK - wait until the previous release is healthy
+          ansible.builtin.uri:
+            url: "{{ health_url }}"
+            return_content: true
+          register: health_after_rollback
+          until: health_after_rollback.status == 200 and health_after_rollback.json.status == 'UP'
+          retries: "{{ health_retries }}"
+          delay: 5
+
+        - name: Fail the deployment (the server itself is healthy again)
+          ansible.builtin.fail:
+            msg: >-
+              Release {{ app_version }} FAILED its health check.
+              Rolled back to {{ previous_release | basename }}, which is UP.

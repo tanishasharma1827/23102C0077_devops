@@ -1,0 +1,33 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<!--
+  Task 8+: Jenkins pipeline job "sports-booking-pipeline".
+  The pipeline itself is defined in the repository's Jenkinsfile (Pipeline script from SCM).
+  Import:  POST /createItem?name=sports-booking-pipeline  with this file as the body.
+-->
+<flow-definition plugin="workflow-job">
+  <description>Sports Facility Booking System - pipeline as code (Jenkinsfile in the repository).</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>https://github.com/tanishasharma1827/23102C0077_devops.git</url>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/develop</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="empty-list"/>
+      <extensions/>
+    </scm>
+    <scriptPath>Jenkinsfile</scriptPath>
+    <lightweight>true</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
