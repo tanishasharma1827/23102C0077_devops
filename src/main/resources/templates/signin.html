@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head('Sign in')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main>
+    <div th:replace="~{fragments :: messages}"></div>
+    <section class="card">
+        <h2>Sign in</h2>
+        <form id="signin-form" th:action="@{/signin}" method="post">
+            <label for="signin-email">Email</label>
+            <input id="signin-email" type="email" name="email" required>
+            <button id="signin-submit" type="submit" class="button">Sign in</button>
+        </form>
+        <p>New here? <a th:href="@{/register}">Create an account</a></p>
+    </section>
+</main>
+</body>
+</html>

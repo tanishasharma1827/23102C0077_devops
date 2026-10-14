@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${appName}">Sports Facility Booking System</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
+<head th:replace="~{fragments :: head('Home')}"></head>
 <body>
-<header>
+<nav th:replace="~{fragments :: nav}"></nav>
+<header class="hero">
     <h1 id="app-title" th:text="${appName}">Sports Facility Booking System</h1>
     <p>Book badminton courts, football turfs and more in a few clicks.</p>
+    <a id="cta-facilities" class="button" th:href="@{/facilities}">View available slots</a>
 </header>
 <main>
     <section class="card">
-        <h2>Coming soon</h2>
-        <ul>
-            <li>Register as a user</li>
-            <li>View available slots</li>
-            <li>Request a booking</li>
-            <li>Get confirmation or cancel</li>
-            <li>Track your booking status</li>
-        </ul>
+        <h2>How it works</h2>
+        <ol>
+            <li>Register with your name, email and phone.</li>
+            <li>Choose a facility and a date to see free slots.</li>
+            <li>Request a booking. The manager confirms it.</li>
+            <li>Track or cancel your bookings any time.</li>
+        </ol>
     </section>
 </main>
 </body>
