@@ -19,7 +19,7 @@ This folder has one document for each task. Read them in order.
 | 8 | Pipeline as Code and Server Deployment | - | Pending |
 | 9 | Selenium Test Design and Local Execution | [task-09-selenium-tests.md](task-09-selenium-tests.md) | Done |
 | 10 | Continuous Testing in Jenkins | - | Pending |
-| 11 | Docker Image and Container Lifecycle | - | Pending |
+| 11 | Docker Image and Container Lifecycle | [task-11-docker.md](task-11-docker.md) | Done |
 | 12 | Jenkins-Docker Continuous Deployment | - | Pending |
 | 13 | Configuration Management Script | - | Pending |
 | 14 | Automated Provisioning and Reliability Validation | - | Pending |
