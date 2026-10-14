@@ -1,0 +1,69 @@
+---
+# Task 13: bring an app server to the required state.
+# Safe to run many times: if the server is already correct, nothing changes (idempotent).
+#
+#   ansible-playbook site.yml
+
+- name: Configure Sports Facility Booking servers
+  hosts: app_servers
+  become: true
+
+  tasks:
+    - name: Install required packages (Java 17 runtime, curl)
+      ansible.builtin.apt:
+        name: "{{ app_packages }}"
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Create application group
+      ansible.builtin.group:
+        name: "{{ app_group }}"
+        system: true
+
+    - name: Create application user (no login shell)
+      ansible.builtin.user:
+        name: "{{ app_user }}"
+        group: "{{ app_group }}"
+        system: true
+        home: "{{ app_home }}"
+        create_home: false
+        shell: /usr/sbin/nologin
+
+    - name: Create application folders
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner }}"
+        group: "{{ app_group }}"
+        mode: "0755"
+      loop:
+        - { path: "{{ app_home }}", owner: root }
+        - { path: "{{ app_home }}/releases", owner: root }
+        - { path: "{{ app_home }}/logs", owner: "{{ app_user }}" }
+        - { path: "{{ app_home }}/run", owner: "{{ app_user }}" }
+        - { path: "{{ app_config_dir }}", owner: root }
+
+    - name: Write server configuration file (port, app name)
+      ansible.builtin.template:
+        src: templates/application.properties.j2
+        dest: "{{ app_config_dir }}/application.properties"
+        owner: root
+        group: "{{ app_group }}"
+        mode: "0640"
+      notify: Restart app if deployed
+
+    - name: Install the service script
+      ansible.builtin.template:
+        src: templates/sports-booking.init.j2
+        dest: "/etc/init.d/{{ app_name }}"
+        mode: "0755"
+      notify: Restart app if deployed
+
+    - name: Show the configured port
+      ansible.builtin.debug:
+        msg: "{{ app_name }} will listen on port {{ app_port }} as user {{ app_user }}"
+
+  handlers:
+    - name: Restart app if deployed
+      ansible.builtin.shell: "[ -e {{ app_home }}/current.war ] && /etc/init.d/{{ app_name }} restart || echo 'not deployed yet'"
