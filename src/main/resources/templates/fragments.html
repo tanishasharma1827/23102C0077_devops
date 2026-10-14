@@ -9,7 +9,8 @@
 <body>
 <nav th:fragment="nav" class="nav">
     <a class="brand" th:href="@{/}">SportsBook</a>
-    <a id="nav-facilities" th:href="@{/facilities}">Facilities</a>
+    <a id="nav-home" th:href="@{/}">Home</a>
+    <a id="nav-facilities" th:href="@{/facilities}">Book a Slot</a>
     <span class="spacer"></span>
     <th:block th:if="${currentUser == null}">
         <a id="nav-register" th:href="@{/register}">Register</a>
