@@ -20,7 +20,7 @@ This folder has one document for each task. Read them in order.
 | 9 | Selenium Test Design and Local Execution | [task-09-selenium-tests.md](task-09-selenium-tests.md) | Done |
 | 10 | Continuous Testing in Jenkins | [task-10-continuous-testing.md](task-10-continuous-testing.md) | Done |
 | 11 | Docker Image and Container Lifecycle | [task-11-docker.md](task-11-docker.md) | Done |
-| 12 | Jenkins-Docker Continuous Deployment | - | Pending |
+| 12 | Jenkins-Docker Continuous Deployment | [task-12-jenkins-docker-cd.md](task-12-jenkins-docker-cd.md) | Done |
 | 13 | Configuration Management Script | [task-13-configuration-management.md](task-13-configuration-management.md) | Done |
 | 14 | Automated Provisioning and Reliability Validation | [task-14-provisioning-reliability.md](task-14-provisioning-reliability.md) | Done |
 
