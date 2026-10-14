@@ -113,5 +113,5 @@ Result: **Tests run: 7, Failures: 0, Errors: 0 — BUILD SUCCESS**
 | 07 | `git log --graph` showing the feature merge: ![](../ss/task-05/07-git-log-feature-merge.png) |
 | 08 | Maven test results: ![](../ss/task-05/08-mvn-test-results.png) |
 
-> **Add yourself (GitHub is private, so these need your login):**
-> the pull request page and the GitHub **Branches** page.
+| 09 | GitHub: all branches: ![](../ss/task-05/github-branches.png) |
+| 10 | GitHub: commit history of `develop`: ![](../ss/task-05/github-commits-develop.png) |
