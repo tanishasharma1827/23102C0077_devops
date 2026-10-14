@@ -144,6 +144,5 @@ tests passing. `/actuator/info` reports `"version":"1.0.0"`.
 | 17 | Friendly error page: ![](../ss/task-06/17-friendly-error-page.png) |
 | 18 | Health check UP: ![](../ss/task-06/18-actuator-health.png) |
 | 19 | Version 1.0.0 on `/actuator/info`: ![](../ss/task-06/19-actuator-info.png) |
-
 | 20 | GitHub: tag `v1.0.0`: ![](../ss/task-06/github-tag-v1.0.0.png) |
 | 21 | GitHub: all feature branches: ![](../ss/task-05/github-branches.png) |

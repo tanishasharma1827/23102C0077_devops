@@ -112,6 +112,5 @@ Result: **Tests run: 7, Failures: 0, Errors: 0 — BUILD SUCCESS**
 | 06 | `git branch -a` showing the feature branch: ![](../ss/task-05/06-git-branches.png) |
 | 07 | `git log --graph` showing the feature merge: ![](../ss/task-05/07-git-log-feature-merge.png) |
 | 08 | Maven test results: ![](../ss/task-05/08-mvn-test-results.png) |
-
 | 09 | GitHub: all branches: ![](../ss/task-05/github-branches.png) |
 | 10 | GitHub: commit history of `develop`: ![](../ss/task-05/github-commits-develop.png) |
