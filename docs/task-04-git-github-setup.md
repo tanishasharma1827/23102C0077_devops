@@ -163,9 +163,11 @@ One issue is created for each backlog item from Task 2, using the templates.
 
 ## 8. Evidence
 
-> Add your screenshots here:
-> 1. Repository home page on GitHub showing files and README
-> 2. `git log --oneline` output showing the initial commits
-> 3. Branches page showing `main` and `develop`
-> 4. Issues page showing the backlog issues
-> 5. "New issue" page showing the 3 templates
+| # | Screenshot |
+|---|-----------|
+| 1 | Repository home page on GitHub: ![](../ss/task-04/github-01-repository-home.png) |
+| 2 | Issue templates in `.github/ISSUE_TEMPLATE`: ![](../ss/task-04/github-02-issue-templates.png) |
+| 3 | Branches `main` and `develop`: see ![](../ss/task-05/github-branches.png) |
+
+> **Still to add yourself:** the Issues page with the backlog issues (M1 to M15)
+> once you've created them.
