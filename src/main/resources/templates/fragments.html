@@ -11,7 +11,7 @@
     <a class="brand" th:href="@{/}">SportsBook</a>
     <a id="nav-home" th:href="@{/}">Home</a>
     <a id="nav-facilities" th:href="@{/facilities}">Book a Slot</a>
-    <a id="nav-my-bookings" th:if="${currentUser != null}" th:href="@{/bookings/my}">My Bookings</a>
+    <a id="nav-my-bookings" th:if="${currentUser != null}" th:href="@{/bookings/mine}">My Reservations</a>
     <a id="nav-manager" th:if="${currentUser != null and currentUser.role.name() == 'MANAGER'}" th:href="@{/manager/bookings}">Manager</a>
     <span class="spacer"></span>
     <th:block th:if="${currentUser == null}">
