@@ -13,7 +13,7 @@
 
     <groupId>com.sportsbooking</groupId>
     <artifactId>sports-booking</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <!-- WAR so the same build can run standalone or be deployed to Tomcat (Task 8) -->
     <packaging>war</packaging>
     <name>Sports Facility Booking System</name>
