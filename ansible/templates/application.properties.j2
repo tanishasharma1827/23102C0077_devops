@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+# Server-specific settings for {{ inventory_hostname }}. Overrides the defaults packaged in the WAR.
+server.port={{ app_port }}
+spring.application.name={{ app_name }}
+management.endpoints.web.exposure.include=health,info
+info.app.server={{ inventory_hostname }}

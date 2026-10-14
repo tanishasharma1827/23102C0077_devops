@@ -1,0 +1,17 @@
+# Ansible TARGET node: a clean Ubuntu server reachable over SSH.
+# It only has what any cloud VM has (SSH, Python, sudo). Ansible installs everything else.
+FROM ubuntu:24.04
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssh-server python3 sudo \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p /run/sshd \
+ && useradd -m -s /bin/bash deploy \
+ && echo "deploy ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/deploy \
+ && sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+
+COPY docker/target-entrypoint.sh /usr/local/bin/target-entrypoint.sh
+RUN chmod +x /usr/local/bin/target-entrypoint.sh
+
+EXPOSE 22 8080
+ENTRYPOINT ["/usr/local/bin/target-entrypoint.sh"]
