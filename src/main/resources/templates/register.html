@@ -4,25 +4,38 @@
 <body>
 <nav th:replace="~{fragments :: nav}"></nav>
 <main>
-    <section class="card">
-        <h2>Create your account</h2>
-        <form id="register-form" th:action="@{/register}" th:object="${user}" method="post" novalidate>
-            <label for="name">Full name</label>
-            <input id="name" type="text" th:field="*{name}">
-            <p class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+    <section class="auth">
+        <div class="side" th:style="'background-image:url(' + @{/img/football.jpg} + ')'">
+            <h2>Join the game</h2>
+            <p>One account to book every court and turf on campus.</p>
+            <ul>
+                <li><svg th:replace="~{fragments :: icon('check')}"></svg>See free slots for the next 7 days</li>
+                <li><svg th:replace="~{fragments :: icon('bolt')}"></svg>First come, first served: book instantly</li>
+                <li><svg th:replace="~{fragments :: icon('shield')}"></svg>Never a double booking</li>
+            </ul>
+        </div>
+        <div class="form">
+            <div class="eyebrow">New player</div>
+            <h2>Create your account</h2>
+            <form id="register-form" th:action="@{/register}" th:object="${user}" method="post" novalidate>
+                <label for="name">Full name</label>
+                <input id="name" type="text" th:field="*{name}" placeholder="e.g. Riya Shah">
+                <p class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
 
-            <label for="email">Email</label>
-            <input id="email" type="email" th:field="*{email}">
-            <p id="email-error" class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+                <label for="email">Email</label>
+                <input id="email" type="email" th:field="*{email}" placeholder="you@example.com">
+                <p id="email-error" class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
 
-            <label for="phone">Phone (10 digits)</label>
-            <input id="phone" type="text" th:field="*{phone}">
-            <p id="phone-error" class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+                <label for="phone">Phone (10 digits)</label>
+                <input id="phone" type="text" th:field="*{phone}" placeholder="9876543210">
+                <p id="phone-error" class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
 
-            <button id="register-submit" type="submit" class="button">Register</button>
-        </form>
-        <p>Already registered? <a th:href="@{/signin}">Sign in</a></p>
+                <button id="register-submit" type="submit" class="button">Register</button>
+            </form>
+            <p class="muted">Already registered? <a th:href="@{/signin}">Sign in</a></p>
+        </div>
     </section>
 </main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

@@ -5,27 +5,50 @@
 <nav th:replace="~{fragments :: nav}"></nav>
 <main>
     <div th:replace="~{fragments :: messages}"></div>
-    <h2>Pending booking requests</h2>
-    <p id="no-requests" th:if="${#lists.isEmpty(bookings)}">No pending requests.</p>
-    <table id="requests-table" th:unless="${#lists.isEmpty(bookings)}">
-        <thead>
-        <tr><th>#</th><th>Player</th><th>Facility</th><th>Date</th><th>Time</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-        <tr th:each="b : ${bookings}" th:id="'request-' + ${b.id}">
-            <td th:text="${b.id}">1</td>
-            <td th:text="${b.user.name}">Player</td>
-            <td th:text="${b.slot.facility.name}">Badminton Court 1</td>
-            <td th:text="${b.slot.date}">2026-10-14</td>
-            <td th:text="${b.slot.label}">06:00 - 07:00</td>
-            <td>
-                <form th:action="@{/bookings/{id}/confirm(id=${b.id})}" method="post" class="inline">
-                    <button th:id="'confirm-' + ${b.id}" type="submit" class="button">Confirm</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="page-head">
+        <div>
+            <div class="eyebrow">Manager</div>
+            <h2>Pending booking requests</h2>
+            <p>Requests are listed first come, first served: the oldest request is at the top.</p>
+        </div>
+        <a class="button outline" th:href="@{/stats}"><svg th:replace="~{fragments :: icon('chart')}"></svg>View insights</a>
+    </div>
+
+    <div class="fcfs-note"><svg th:replace="~{fragments :: icon('bolt')}"></svg>
+        <span><b>FCFS queue:</b> <span th:text="${#lists.size(bookings)}">3</span> request(s) waiting. Please confirm them in order, starting from #1.</span></div>
+
+    <div class="table-card" th:if="${#lists.isEmpty(bookings)}">
+        <div class="empty"><svg th:replace="~{fragments :: icon('inbox')}"></svg>
+            <p id="no-requests">No pending requests.</p><p class="muted">New requests from players will appear here.</p></div>
+    </div>
+    <div class="table-card" th:unless="${#lists.isEmpty(bookings)}">
+        <div class="table-scroll">
+            <table id="requests-table">
+                <thead>
+                <tr><th>Queue</th><th>Player</th><th>Facility</th><th>Date</th><th>Time</th><th>Requested at</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="b, it : ${bookings}" th:id="'request-' + ${b.id}">
+                    <td><span class="queue" th:classappend="${it.first} ? 'first'" th:text="${it.count}">1</span></td>
+                    <td><div class="fac-cell"><span class="avatar" th:text="${#strings.substring(b.user.name, 0, 1)}">A</span>
+                        <span th:text="${b.user.name}">Player</span></div></td>
+                    <td><div class="fac-cell">
+                        <span class="thumb" th:style="'background-image:url(' + @{${b.slot.facility.image}} + ')'"></span>
+                        <span th:text="${b.slot.facility.name}">Badminton Court 1</span></div></td>
+                    <td th:text="${#temporals.format(b.slot.date, 'EEE, d MMM')}">Thu, 15 Oct</td>
+                    <td class="time" th:text="${b.slot.label}">06:00 - 07:00</td>
+                    <td class="muted" th:text="${#temporals.format(b.createdAt, 'd MMM, HH:mm:ss')}">15 Oct, 10:42:13</td>
+                    <td>
+                        <form th:action="@{/bookings/{id}/confirm(id=${b.id})}" method="post" class="inline">
+                            <button th:id="'confirm-' + ${b.id}" type="submit" class="button small">Confirm</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

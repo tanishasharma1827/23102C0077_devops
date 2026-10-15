@@ -24,11 +24,18 @@ public class BookingService {
         this.slotRepository = slotRepository;
     }
 
-    /** US3 + M10: create a REQUESTED booking, refusing a slot that is already taken. */
+    /**
+     * US3 + M10: create a REQUESTED booking on a first-come, first-served basis.
+     * The first request locks the slot; past slots and taken slots are refused.
+     */
     @Transactional
     public synchronized Booking request(User user, Long slotId) {
         Slot slot = slotRepository.findById(slotId)
                 .orElseThrow(() -> new BookingException("Slot not found"));
+        if (slot.isPast()) {
+            throw new BookingException("Booking not possible: " + slot.getDate() + " at " + slot.getLabel()
+                    + " is in the past. Please choose a future date and time.");
+        }
         if (bookingRepository.existsBySlotIdAndStatusIn(slotId, ACTIVE)) {
             throw new BookingException("Sorry, this slot is already booked. Please choose another slot.");
         }
@@ -59,6 +66,9 @@ public class BookingService {
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new BookingException("This booking is already cancelled");
         }
+        if (booking.getSlot().isPast()) {
+            throw new BookingException("This slot has already been played and cannot be cancelled");
+        }
         booking.setStatus(BookingStatus.CANCELLED);
         return booking;
     }
@@ -68,8 +78,9 @@ public class BookingService {
         return bookingRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
     }
 
+    /** Pending requests in first-come, first-served order (oldest request first). */
     public List<Booking> pendingRequests() {
-        return bookingRepository.findByStatusOrderByCreatedAt(BookingStatus.REQUESTED);
+        return bookingRepository.findByStatusOrderByCreatedAtAscIdAsc(BookingStatus.REQUESTED);
     }
 
     /** Ids of the given slots that are currently taken (used to mark slots as Booked). */

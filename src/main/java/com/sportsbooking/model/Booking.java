@@ -30,6 +30,13 @@ public class Booking {
         this.slot = slot;
     }
 
+    /** Used by the DataLoader to create booking history for the stats dashboard. */
+    public Booking(User user, Slot slot, BookingStatus status, LocalDateTime createdAt) {
+        this(user, slot);
+        this.status = status;
+        this.createdAt = createdAt;
+    }
+
     public Long getId() { return id; }
     public User getUser() { return user; }
     public Slot getSlot() { return slot; }
