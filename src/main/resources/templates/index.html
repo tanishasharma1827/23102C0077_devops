@@ -3,21 +3,80 @@
 <head th:replace="~{fragments :: head('Home')}"></head>
 <body>
 <nav th:replace="~{fragments :: nav}"></nav>
+
 <header class="hero">
-    <h1 id="app-title" th:text="${appName}">Sports Facility Booking System</h1>
-    <p>Book badminton courts, football turfs and more in a few clicks.</p>
-    <a id="cta-facilities" class="button" th:href="@{/facilities}">View available slots</a>
+    <div class="hero-inner">
+        <span class="tag"><svg th:replace="~{fragments :: icon('bolt')}"></svg>First come, first served &middot; Instant slot locking</span>
+        <h1 id="app-title" th:text="${appName}">Sports Facility Booking System</h1>
+        <p class="lead">Book badminton courts, football turfs, tennis courts and more in a few clicks.
+            No phone calls, no paper register and never a double booking.</p>
+        <div class="actions">
+            <a id="cta-facilities" class="button accent" th:href="@{/facilities}">View available slots <svg th:replace="~{fragments :: icon('arrow')}"></svg></a>
+            <a class="button ghost" th:href="@{/stats}"><svg th:replace="~{fragments :: icon('chart')}"></svg>See live insights</a>
+        </div>
+    </div>
 </header>
+
+<section class="stat-strip">
+    <div class="stat"><span class="ic green"><svg th:replace="~{fragments :: icon('ball')}"></svg></span>
+        <div><div class="num" th:text="${#lists.size(facilities)}">6</div><div class="lbl">Sports facilities</div></div></div>
+    <div class="stat"><span class="ic blue"><svg th:replace="~{fragments :: icon('calendar')}"></svg></span>
+        <div><div class="num" th:text="${stats.totalBookings}">420</div><div class="lbl">Bookings made</div></div></div>
+    <div class="stat"><span class="ic amber"><svg th:replace="~{fragments :: icon('users')}"></svg></span>
+        <div><div class="num" th:text="${stats.players}">8</div><div class="lbl">Registered players</div></div></div>
+    <div class="stat"><span class="ic red"><svg th:replace="~{fragments :: icon('percent')}"></svg></span>
+        <div><div class="num" th:text="${stats.utilisation} + '%'">62%</div><div class="lbl">Court usage (14 days)</div></div></div>
+</section>
+
 <main>
-    <section class="card">
-        <h2>How it works</h2>
-        <ol>
-            <li>Register with your name, email and phone.</li>
-            <li>Choose a facility and a date to see free slots.</li>
-            <li>Request a booking. The manager confirms it.</li>
-            <li>Track or cancel your bookings any time.</li>
-        </ol>
-    </section>
+    <div class="section-title">
+        <div class="eyebrow">Our facilities</div>
+        <h2>Pick your game</h2>
+        <p>Live count of free slots left today</p>
+    </div>
+    <div class="grid">
+        <article class="facility" th:each="f : ${facilities}">
+            <div class="photo" th:style="'background-image:url(' + @{${f.image}} + ')'">
+                <span class="sport" th:text="${f.sport}">Badminton</span>
+                <span class="free" th:with="free=${freeToday.get(f.id)}">
+                    <span class="dot" th:classappend="${free == 0} ? 'none'"></span>
+                    <span th:text="${free} + ' free today'">5 free today</span>
+                </span>
+            </div>
+            <div class="body">
+                <h3 th:text="${f.name}">Badminton Court 1</h3>
+                <span class="loc"><svg th:replace="~{fragments :: icon('pin')}"></svg><span th:text="${f.location}">Indoor Hall</span></span>
+                <div class="row">
+                    <a class="button small" th:href="@{/slots(facilityId=${f.id})}">Book now <svg th:replace="~{fragments :: icon('arrow')}"></svg></a>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <div class="section-title">
+        <div class="eyebrow">How it works</div>
+        <h2>From sign-up to game time in 4 steps</h2>
+    </div>
+    <div class="steps">
+        <div class="step"><span class="n">1</span><span class="ic green"><svg th:replace="~{fragments :: icon('user')}"></svg></span>
+            <h3>Register</h3><p>Create an account with your name, email and phone.</p></div>
+        <div class="step"><span class="n">2</span><span class="ic blue"><svg th:replace="~{fragments :: icon('calendar')}"></svg></span>
+            <h3>Choose a slot</h3><p>Pick a facility and a date to see free time slots.</p></div>
+        <div class="step"><span class="n">3</span><span class="ic amber"><svg th:replace="~{fragments :: icon('bolt')}"></svg></span>
+            <h3>Request it first</h3><p>Your request locks the slot at once. Nobody else can take it.</p></div>
+        <div class="step"><span class="n">4</span><span class="ic red"><svg th:replace="~{fragments :: icon('shield')}"></svg></span>
+            <h3>Manager confirms</h3><p>Track the status, or cancel any time to free the slot.</p></div>
+    </div>
+
+    <div class="fcfs">
+        <div class="badge-big">FCFS</div>
+        <div>
+            <h3>First come, first served. Always fair.</h3>
+            <p>The first player to request a slot gets it, and later requests for the same slot are blocked.
+                The manager sees requests in the order they arrived. Past dates and times can never be booked.</p>
+        </div>
+    </div>
 </main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

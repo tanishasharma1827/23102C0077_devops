@@ -24,6 +24,8 @@ This folder has one document for each task. Read them in order.
 | 13 | Configuration Management Script | [task-13-configuration-management.md](task-13-configuration-management.md) | Done |
 | 14 | Automated Provisioning and Reliability Validation | [task-14-provisioning-reliability.md](task-14-provisioning-reliability.md) | Done |
 
+**Extra improvement:** [ui-redesign.md](ui-redesign.md): new attractive UI, FCFS queue, Insights charts and the past-date rule.
+
 ## How to read the diagrams
 
 Diagrams are written in **Mermaid**. GitHub draws them as pictures automatically

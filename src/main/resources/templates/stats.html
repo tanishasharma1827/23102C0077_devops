@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head('Insights')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main>
+    <div class="page-head">
+        <div>
+            <div class="eyebrow">Insights</div>
+            <h2 id="stats-title">Booking statistics</h2>
+            <p th:text="'Live numbers from the booking database. Usage figures cover the last ' + ${historyDays} + ' days.'">Live numbers</p>
+        </div>
+        <a class="button" th:href="@{/facilities}"><svg th:replace="~{fragments :: icon('calendar')}"></svg>Book a slot</a>
+    </div>
+
+    <section class="summary">
+        <div class="stat"><span class="ic blue"><svg th:replace="~{fragments :: icon('calendar')}"></svg></span>
+            <div><div class="num" id="kpi-total" th:text="${stats.totalBookings}">420</div><div class="lbl">Total bookings</div></div></div>
+        <div class="stat"><span class="ic green"><svg th:replace="~{fragments :: icon('percent')}"></svg></span>
+            <div><div class="num" th:text="${stats.utilisation} + '%'">62%</div><div class="lbl">Court usage (14 days)</div></div></div>
+        <div class="stat"><span class="ic amber"><svg th:replace="~{fragments :: icon('clock')}"></svg></span>
+            <div><div class="num" th:text="${stats.peakHour}">18:00</div><div class="lbl">Busiest start time</div></div></div>
+        <div class="stat"><span class="ic red"><svg th:replace="~{fragments :: icon('ball')}"></svg></span>
+            <div><div class="num" style="font-size:1.15rem" th:text="${stats.busiestFacility}">Football Turf</div><div class="lbl">Most booked facility</div></div></div>
+    </section>
+
+    <div class="charts">
+        <section class="chart-card wide">
+            <h3>Bookings per day</h3>
+            <p class="sub" th:text="'Active bookings (requested and confirmed) for the last ' + ${historyDays} + ' days'">Last 14 days</p>
+            <div class="chart-box"><canvas id="chart-daily" aria-label="Line chart of bookings per day"></canvas></div>
+            <details><summary>Show data table</summary>
+                <table><thead><tr><th>Day</th><th>Bookings</th></tr></thead>
+                    <tbody><tr th:each="p : ${stats.daily}"><td th:text="${p.label}">1 Oct</td><td th:text="${p.value}">20</td></tr></tbody></table>
+            </details>
+        </section>
+
+        <section class="chart-card">
+            <h3>Bookings by facility</h3>
+            <p class="sub">Which courts are the most popular</p>
+            <div class="chart-box"><canvas id="chart-facility" aria-label="Bar chart of bookings by facility"></canvas></div>
+            <details><summary>Show data table</summary>
+                <table><thead><tr><th>Facility</th><th>Bookings</th><th>Usage</th></tr></thead>
+                    <tbody><tr th:each="f : ${stats.facilities}"><td th:text="${f.facility.name}">Turf</td><td th:text="${f.bookings}">80</td><td th:text="${f.utilisation} + '%'">70%</td></tr></tbody></table>
+            </details>
+        </section>
+
+        <section class="chart-card">
+            <h3>Peak hours</h3>
+            <p class="sub">Bookings by slot start time. Evenings fill up first.</p>
+            <div class="chart-box"><canvas id="chart-hours" aria-label="Bar chart of bookings by start time"></canvas></div>
+            <details><summary>Show data table</summary>
+                <table><thead><tr><th>Start time</th><th>Bookings</th></tr></thead>
+                    <tbody><tr th:each="p : ${stats.byHour}"><td th:text="${p.label}">18:00</td><td th:text="${p.value}">60</td></tr></tbody></table>
+            </details>
+        </section>
+
+        <section class="chart-card">
+            <h3>Booking status</h3>
+            <p class="sub" th:text="${stats.cancellationRate} + '% of all bookings were cancelled'">Status breakdown</p>
+            <div class="meter" th:with="t=${stats.totalBookings > 0 ? stats.totalBookings : 1}">
+                <span class="m-confirmed" th:style="'width:' + ${100.0 * stats.confirmed / t} + '%'" th:title="'Confirmed: ' + ${stats.confirmed}"></span>
+                <span class="m-requested" th:style="'width:' + ${100.0 * stats.requested / t} + '%'" th:title="'Requested: ' + ${stats.requested}"></span>
+                <span class="m-cancelled" th:style="'width:' + ${100.0 * stats.cancelled / t} + '%'" th:title="'Cancelled: ' + ${stats.cancelled}"></span>
+            </div>
+            <div class="keys">
+                <div class="key"><span class="sw" style="background:#1baf7a"></span><svg th:replace="~{fragments :: icon('check')}"></svg>Confirmed<b th:text="${stats.confirmed}">350</b></div>
+                <div class="key"><span class="sw" style="background:#eda100"></span><svg th:replace="~{fragments :: icon('clock')}"></svg>Waiting for manager<b th:text="${stats.requested}">5</b></div>
+                <div class="key"><span class="sw" style="background:#e34948"></span><svg th:replace="~{fragments :: icon('ban')}"></svg>Cancelled<b th:text="${stats.cancelled}">40</b></div>
+            </div>
+        </section>
+
+        <section class="chart-card">
+            <h3>Court usage by facility</h3>
+            <p class="sub">Share of slots that were booked (last 14 days)</p>
+            <div class="util">
+                <div class="util-row" th:each="f : ${stats.facilities}">
+                    <span th:text="${f.facility.name}">Football Turf</span>
+                    <span class="bar"><span th:style="'width:' + ${f.utilisation} + '%'"></span></span>
+                    <b th:text="${f.utilisation} + '%'">72%</b>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+
+<script th:src="@{/js/chart-4.4.7.umd.min.js}"></script>
+<script th:inline="javascript">
+    const daily = { labels: /*[[${stats.daily.![label]}]]*/ [], values: /*[[${stats.daily.![value]}]]*/ [] };
+    const hours = { labels: /*[[${stats.byHour.![label]}]]*/ [], values: /*[[${stats.byHour.![value]}]]*/ [] };
+    const facilities = { labels: /*[[${stats.facilities.![facility.name]}]]*/ [], values: /*[[${stats.facilities.![bookings]}]]*/ [] };
+
+    const SERIES = '#1baf7a', SERIES_DARK = '#0b7a53', GRID = '#eef2f5', INK = '#5b6b7a';
+    Chart.defaults.font.family = '"Segoe UI", Inter, system-ui, sans-serif';
+    Chart.defaults.color = INK;
+    Chart.defaults.animation.duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 600;
+    Chart.defaults.plugins.legend.display = false;   // one series per chart: the title names it
+    Chart.defaults.plugins.tooltip.backgroundColor = '#0c2036';
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.displayColors = false;
+    const axes = (horizontal) => ({
+        x: { grid: { display: horizontal, color: GRID }, border: { display: false }, beginAtZero: true, ticks: { precision: 0 } },
+        y: { grid: { display: !horizontal, color: GRID }, border: { display: false }, beginAtZero: true, ticks: { precision: 0 } }
+    });
+
+    new Chart(document.getElementById('chart-daily'), {
+        type: 'line',
+        data: { labels: daily.labels, datasets: [{ label: 'Bookings', data: daily.values, borderColor: SERIES, borderWidth: 2,
+            backgroundColor: 'rgba(27, 175, 122, .12)', fill: true, tension: .35, pointRadius: 4, pointHoverRadius: 6,
+            pointBackgroundColor: '#fff', pointBorderColor: SERIES, pointBorderWidth: 2 }] },
+        options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: axes(false) }
+    });
+
+    new Chart(document.getElementById('chart-facility'), {
+        type: 'bar',
+        data: { labels: facilities.labels, datasets: [{ label: 'Bookings', data: facilities.values, backgroundColor: SERIES,
+            hoverBackgroundColor: SERIES_DARK, borderRadius: 4, borderSkipped: 'start', maxBarThickness: 26 }] },
+        options: { indexAxis: 'y', maintainAspectRatio: false, scales: axes(true) }
+    });
+
+    const peak = Math.max(...hours.values);
+    new Chart(document.getElementById('chart-hours'), {
+        type: 'bar',
+        data: { labels: hours.labels, datasets: [{ label: 'Bookings', data: hours.values, borderRadius: 4, borderSkipped: 'start',
+            maxBarThickness: 34, backgroundColor: hours.values.map(v => v === peak ? SERIES_DARK : SERIES), hoverBackgroundColor: SERIES_DARK }] },
+        options: { maintainAspectRatio: false, scales: axes(false) }
+    });
+</script>
+</body>
+</html>

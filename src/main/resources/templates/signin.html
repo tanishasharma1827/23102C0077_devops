@@ -5,15 +5,24 @@
 <nav th:replace="~{fragments :: nav}"></nav>
 <main>
     <div th:replace="~{fragments :: messages}"></div>
-    <section class="card">
-        <h2>Sign in</h2>
-        <form id="signin-form" th:action="@{/signin}" method="post">
-            <label for="signin-email">Email</label>
-            <input id="signin-email" type="email" name="email" required>
-            <button id="signin-submit" type="submit" class="button">Sign in</button>
-        </form>
-        <p>New here? <a th:href="@{/register}">Create an account</a></p>
+    <section class="auth">
+        <div class="side" th:style="'background-image:url(' + @{/img/badminton.jpg} + ')'">
+            <h2>Welcome back</h2>
+            <p>Sign in to book a slot, track your requests or manage bookings.</p>
+        </div>
+        <div class="form">
+            <div class="eyebrow">Player or manager</div>
+            <h2>Sign in</h2>
+            <form id="signin-form" th:action="@{/signin}" method="post">
+                <label for="signin-email">Email</label>
+                <input id="signin-email" type="email" name="email" required placeholder="you@example.com">
+                <button id="signin-submit" type="submit" class="button">Sign in</button>
+            </form>
+            <p class="demo-hint">Demo manager account: <code>manager@sports.local</code></p>
+            <p class="muted">New here? <a th:href="@{/register}">Create an account</a></p>
+        </div>
     </section>
 </main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

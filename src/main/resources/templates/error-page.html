@@ -4,11 +4,15 @@
 <body>
 <nav th:replace="~{fragments :: nav}"></nav>
 <main>
-    <section class="card">
-        <h2>Something went wrong</h2>
-        <p id="error-text" class="alert error" th:text="${error}">Error</p>
-        <a class="button" th:href="@{/facilities}">Back to facilities</a>
+    <section class="blocked">
+        <span class="big-icon"><svg th:replace="~{fragments :: icon('alert')}"></svg></span>
+        <div>
+            <h3>Something went wrong</h3>
+            <p id="error-text" th:text="${error}">Error</p>
+            <a class="button small" th:href="@{/facilities}">Back to facilities</a>
+        </div>
     </section>
 </main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>
