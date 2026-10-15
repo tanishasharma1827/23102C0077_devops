@@ -3,6 +3,7 @@ package com.sportsbooking.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -37,5 +38,14 @@ public class Slot {
 
     public String getLabel() {
         return startTime + " - " + endTime;
+    }
+
+    public LocalDateTime getStart() {
+        return LocalDateTime.of(date, startTime);
+    }
+
+    /** A slot whose start time has already passed can no longer be booked. */
+    public boolean isPast() {
+        return getStart().isBefore(LocalDateTime.now());
     }
 }

@@ -88,4 +88,22 @@ class RegistrationAndAvailabilityTests {
                         .param("date", LocalDate.now().plusYears(1).toString()))
                 .andExpect(content().string(containsString("No slots available")));
     }
+
+    @Test
+    void pastDateShowsBookingNotPossible() throws Exception {
+        Long id = facilityRepository.findAll().get(0).getId();
+        mockMvc.perform(get("/slots").param("facilityId", id.toString())
+                        .param("date", LocalDate.now().minusDays(14).toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Booking not possible for a past date")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("id=\"book-"))));
+    }
+
+    @Test
+    void statsDashboardShowsCharts() throws Exception {
+        mockMvc.perform(get("/stats"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Booking statistics")))
+                .andExpect(content().string(containsString("chart-daily")));
+    }
 }

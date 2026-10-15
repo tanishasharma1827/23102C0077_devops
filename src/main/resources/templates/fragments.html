@@ -5,30 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${title} + ' | Sports Facility Booking'">Sports Facility Booking</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/img/favicon.svg}" type="image/svg+xml">
 </head>
 <body>
+
+<!-- Simple line icons: <svg th:replace="~{fragments :: icon('calendar')}"></svg> -->
+<svg th:fragment="icon(name)" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <th:block th:switch="${name}">
+        <g th:case="'calendar'"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></g>
+        <g th:case="'clock'"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></g>
+        <g th:case="'pin'"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></g>
+        <g th:case="'user'"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g>
+        <g th:case="'users'"><circle cx="9" cy="8" r="4"/><path d="M1 21a8 8 0 0 1 16 0M16 4a4 4 0 0 1 0 8M23 21a8 8 0 0 0-5-7.4"/></g>
+        <g th:case="'check'"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></g>
+        <g th:case="'ban'"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></g>
+        <g th:case="'chart'"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></g>
+        <g th:case="'bars'"><path d="M3 21h18M7 17v-7M12 17V5M17 17v-4"/></g>
+        <g th:case="'bolt'"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></g>
+        <g th:case="'list'"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></g>
+        <g th:case="'ball'"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 0 0 20M12 2a15 15 0 0 1 0 20M2 12h20"/></g>
+        <g th:case="'shield'"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></g>
+        <g th:case="'arrow'"><path d="M5 12h14M12 5l7 7-7 7"/></g>
+        <g th:case="'back'"><path d="M19 12H5M12 19l-7-7 7-7"/></g>
+        <g th:case="'inbox'"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></g>
+        <g th:case="'alert'"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></g>
+        <g th:case="'percent'"><path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></g>
+        <g th:case="'logout'"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></g>
+        <g th:case="*"><circle cx="12" cy="12" r="4"/></g>
+    </th:block>
+</svg>
+
 <nav th:fragment="nav" class="nav">
-    <a class="brand" th:href="@{/}">SportsBook</a>
+    <a class="brand" th:href="@{/}">
+        <span class="logo"><svg th:replace="~{fragments :: icon('ball')}"></svg></span>SportsBook
+    </a>
     <a id="nav-home" th:href="@{/}">Home</a>
-    <a id="nav-facilities" th:href="@{/facilities}">Book a Slot</a>
-    <a id="nav-my-bookings" th:if="${currentUser != null}" th:href="@{/bookings/my}">My Reservations</a>
-    <a id="nav-manager" th:if="${currentUser != null and currentUser.role.name() == 'MANAGER'}" th:href="@{/manager/bookings}">Manager</a>
+    <a id="nav-facilities" th:href="@{/facilities}"><svg th:replace="~{fragments :: icon('calendar')}"></svg>Book a Slot</a>
+    <a id="nav-my-bookings" th:if="${currentUser != null}" th:href="@{/bookings/my}"><svg th:replace="~{fragments :: icon('list')}"></svg>My Reservations</a>
+    <a id="nav-manager" th:if="${currentUser != null and currentUser.role.name() == 'MANAGER'}" th:href="@{/manager/bookings}"><svg th:replace="~{fragments :: icon('inbox')}"></svg>Manager</a>
+    <a id="nav-stats" th:href="@{/stats}"><svg th:replace="~{fragments :: icon('chart')}"></svg>Insights</a>
     <span class="spacer"></span>
     <th:block th:if="${currentUser == null}">
-        <a id="nav-register" th:href="@{/register}">Register</a>
         <a id="nav-signin" th:href="@{/signin}">Sign in</a>
+        <a id="nav-register" class="cta" th:href="@{/register}">Register</a>
     </th:block>
     <th:block th:if="${currentUser != null}">
-        <span id="nav-user" th:text="'Hi, ' + ${currentUser.name}">Hi</span>
+        <span class="user-chip">
+            <span class="avatar" th:text="${#strings.substring(currentUser.name, 0, 1)}">T</span>
+            <span id="nav-user" th:text="'Hi, ' + ${currentUser.name}">Hi</span>
+            <span class="role" th:if="${currentUser.role.name() == 'MANAGER'}">MANAGER</span>
+        </span>
         <form th:action="@{/signout}" method="post" class="inline">
-            <button id="nav-signout" type="submit" class="link">Sign out</button>
+            <button id="nav-signout" type="submit" class="link"><svg th:replace="~{fragments :: icon('logout')}"></svg>Sign out</button>
         </form>
     </th:block>
 </nav>
 
 <div th:fragment="messages">
-    <p id="flash-message" class="alert success" th:if="${message}" th:text="${message}"></p>
-    <p id="flash-error" class="alert error" th:if="${error}" th:text="${error}"></p>
+    <p id="flash-message" class="alert success" th:if="${message}"><svg th:replace="~{fragments :: icon('check')}"></svg><span th:text="${message}"></span></p>
+    <p id="flash-error" class="alert error" th:if="${error}"><svg th:replace="~{fragments :: icon('alert')}"></svg><span th:text="${error}"></span></p>
 </div>
+
+<footer th:fragment="footer" class="footer">
+    <div class="footer-inner">
+        <div>
+            <strong>SportsBook</strong> &middot; Sports Facility Booking System<br>
+            First come, first served &middot; Built with Spring Boot, Jenkins, Docker and Ansible
+        </div>
+        <details>
+            <summary>Photo credits (Wikimedia Commons)</summary>
+            <ul>
+                <li>Hero: "The Peninsula Stadium at night" by Emessem T, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></li>
+                <li>Badminton: "Hougang Sports Hall" by Shuhuif, CC BY-SA 4.0</li>
+                <li>Football: "Artificial Turf Football Field at Regent's International School Bangkok" by TheRegentsInternationalSchoolBangkok, CC BY-SA 4.0</li>
+                <li>Table tennis: "Mesa de ping pong, Riesstr., Múnich" by Diego Delso, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a></li>
+                <li>Tennis: "Clay tennis courts melbourne looking down the net" by KeepActive Australia, CC BY-SA 4.0</li>
+                <li>Basketball: "Outdoor basketball court, Hurst Park, Molesey" by Mertbiol, CC0</li>
+                <li>Cricket: "Bishop's Stortford Cricket Club practice nets" by Acabashi, CC BY-SA 4.0</li>
+            </ul>
+        </details>
+    </div>
+</footer>
 </body>
 </html>

@@ -5,37 +5,91 @@
 <nav th:replace="~{fragments :: nav}"></nav>
 <main>
     <div th:replace="~{fragments :: messages}"></div>
-    <h2 th:text="${facility.name}">Badminton Court 1</h2>
 
-    <form id="date-form" th:action="@{/slots}" method="get" class="inline-form">
-        <input type="hidden" name="facilityId" th:value="${facility.id}">
-        <label for="date">Date</label>
-        <input id="date" type="date" name="date" th:value="${date}">
-        <button id="date-submit" type="submit" class="button">Show</button>
-    </form>
+    <section class="banner" th:style="'background-image:url(' + @{${facility.image}} + ')'">
+        <a class="back" th:href="@{/facilities}">&larr; All facilities</a>
+        <h2 th:text="${facility.name}">Badminton Court 1</h2>
+        <div class="meta">
+            <span><svg th:replace="~{fragments :: icon('ball')}"></svg><span th:text="${facility.sport}">Badminton</span></span>
+            <span><svg th:replace="~{fragments :: icon('pin')}"></svg><span th:text="${facility.location}">Indoor Hall</span></span>
+            <span><svg th:replace="~{fragments :: icon('calendar')}"></svg><span th:text="${#temporals.format(date, 'EEEE, d MMMM yyyy')}">Thursday</span></span>
+            <span th:unless="${pastDate}"><svg th:replace="~{fragments :: icon('check')}"></svg><span th:text="${freeCount} + ' slots free'">5 slots free</span></span>
+        </div>
+    </section>
 
-    <p id="no-slots" th:if="${#lists.isEmpty(slots)}">No slots available</p>
-    <table id="slots-table" th:unless="${#lists.isEmpty(slots)}">
-        <thead>
-        <tr><th>Time</th><th>Status</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-        <tr th:each="s : ${slots}" th:id="'slot-' + ${s.id}"
-            th:with="taken=${#sets.contains(takenSlotIds, s.id)}">
-            <td th:text="${s.label}">06:00 - 07:00</td>
-            <td class="status" th:text="${taken} ? 'Booked' : 'Available'">Available</td>
-            <td>
-                <form th:if="${!taken and currentUser != null}" th:action="@{/bookings}" method="post" class="inline">
-                    <input type="hidden" name="slotId" th:value="${s.id}">
-                    <input type="hidden" name="facilityId" th:value="${facility.id}">
-                    <input type="hidden" name="date" th:value="${date}">
-                    <button th:id="'book-' + ${s.id}" type="submit" class="button">Book</button>
-                </form>
-                <a th:if="${!taken and currentUser == null}" th:href="@{/signin}">Sign in to book</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="toolbar">
+        <div class="days">
+            <a th:each="d : ${week}" class="day" th:classappend="${d == date} ? 'active'"
+               th:href="@{/slots(facilityId=${facility.id}, date=${d})}">
+                <small th:text="${d == today} ? 'Today' : ${#temporals.format(d, 'EEE')}">Mon</small>
+                <strong th:text="${#temporals.format(d, 'd')}">15</strong>
+            </a>
+        </div>
+        <form id="date-form" th:action="@{/slots}" method="get" class="inline-form">
+            <input type="hidden" name="facilityId" th:value="${facility.id}">
+            <label for="date">Any date</label>
+            <input id="date" type="date" name="date" th:value="${date}">
+            <button id="date-submit" type="submit" class="button small">Show</button>
+        </form>
+    </div>
+
+    <!-- A past date can never be booked -->
+    <section id="past-date-error" class="blocked" th:if="${pastDate}">
+        <span class="big-icon"><svg th:replace="~{fragments :: icon('ban')}"></svg></span>
+        <div>
+            <h3>Booking not possible for a past date</h3>
+            <p><b th:text="${#temporals.format(date, 'd MMMM yyyy')}">1 October 2026</b> has already gone.
+                You can only book from today (<span th:text="${#temporals.format(today, 'd MMMM yyyy')}">15 October 2026</span>) onwards.</p>
+            <a class="button small" th:href="@{/slots(facilityId=${facility.id})}">Show today's slots</a>
+        </div>
+    </section>
+
+    <div class="fcfs-note" th:unless="${pastDate}"><svg th:replace="~{fragments :: icon('bolt')}"></svg>
+        <span><b>First come, first served:</b> the first request locks the slot. Slots whose start time has passed are closed.</span></div>
+
+    <div class="legend" th:unless="${#lists.isEmpty(slots)}">
+        <span><span class="pill available">Available</span> free to book</span>
+        <span><span class="pill booked">Booked</span> taken by another player</span>
+        <span><span class="pill past">Past</span> time has passed</span>
+    </div>
+
+    <div class="table-card" th:if="${#lists.isEmpty(slots)}">
+        <div class="empty"><svg th:replace="~{fragments :: icon('calendar')}"></svg>
+            <p id="no-slots">No slots available</p>
+            <p class="muted">Slots open up to 7 days ahead. Try another date.</p></div>
+    </div>
+    <div class="table-card" th:unless="${#lists.isEmpty(slots)}">
+        <div class="table-scroll">
+            <table id="slots-table">
+                <thead>
+                <tr><th>Time</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${slots}" th:id="'slot-' + ${s.id}"
+                    th:with="taken=${#sets.contains(takenSlotIds, s.id)}, past=${s.past}"
+                    th:classappend="${past and !taken} ? 'is-past'">
+                    <td class="time" th:text="${s.label}">06:00 - 07:00</td>
+                    <td>
+                        <span th:if="${taken}" class="pill booked">Booked</span>
+                        <span th:if="${!taken and past}" class="pill past">Past</span>
+                        <span th:if="${!taken and !past}" class="pill available">Available</span>
+                    </td>
+                    <td>
+                        <form th:if="${!taken and !past and currentUser != null}" th:action="@{/bookings}" method="post" class="inline">
+                            <input type="hidden" name="slotId" th:value="${s.id}">
+                            <input type="hidden" name="facilityId" th:value="${facility.id}">
+                            <input type="hidden" name="date" th:value="${date}">
+                            <button th:id="'book-' + ${s.id}" type="submit" class="button small">Book</button>
+                        </form>
+                        <a th:if="${!taken and !past and currentUser == null}" class="button small outline" th:href="@{/signin}">Sign in to book</a>
+                        <span th:if="${!taken and past}" class="muted">Not possible</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

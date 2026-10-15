@@ -5,14 +5,34 @@
 <nav th:replace="~{fragments :: nav}"></nav>
 <main>
     <div th:replace="~{fragments :: messages}"></div>
-    <h2>Facilities</h2>
+    <div class="page-head">
+        <div>
+            <div class="eyebrow">Book a slot</div>
+            <h2>Facilities</h2>
+            <p>Choose a facility to see its free time slots for the next 7 days.</p>
+        </div>
+    </div>
+    <div class="fcfs-note"><svg th:replace="~{fragments :: icon('bolt')}"></svg>
+        <span><b>First come, first served:</b> the first request locks a slot immediately, so book early for evening slots.</span></div>
     <div class="grid">
-        <section class="card facility" th:each="f : ${facilities}">
-            <h3 th:text="${f.name}">Badminton Court 1</h3>
-            <p class="muted" th:text="${f.type} + ' | ' + ${f.location}">BADMINTON | Indoor Hall</p>
-            <a class="button" th:id="'view-slots-' + ${f.id}" th:href="@{/slots(facilityId=${f.id})}">View slots</a>
-        </section>
+        <article class="facility" th:each="f : ${facilities}">
+            <div class="photo" th:style="'background-image:url(' + @{${f.image}} + ')'">
+                <span class="sport" th:text="${f.sport}">Badminton</span>
+                <span class="free" th:with="free=${freeToday.get(f.id)}">
+                    <span class="dot" th:classappend="${free == 0} ? 'none'"></span>
+                    <span th:text="${free} + ' free today'">5 free today</span>
+                </span>
+            </div>
+            <div class="body">
+                <h3 th:text="${f.name}">Badminton Court 1</h3>
+                <span class="loc"><svg th:replace="~{fragments :: icon('pin')}"></svg><span th:text="${f.location}">Indoor Hall</span></span>
+                <div class="row">
+                    <a class="button small" th:id="'view-slots-' + ${f.id}" th:href="@{/slots(facilityId=${f.id})}">View slots <svg th:replace="~{fragments :: icon('arrow')}"></svg></a>
+                </div>
+            </div>
+        </article>
     </div>
 </main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

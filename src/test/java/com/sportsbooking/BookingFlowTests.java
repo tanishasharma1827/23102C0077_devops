@@ -48,7 +48,15 @@ class BookingFlowTests {
         asha = userService.register(new User("Asha", "asha@example.com", "9876543210", Role.PLAYER));
         ravi = userService.register(new User("Ravi", "ravi@example.com", "9876543211", Role.PLAYER));
         manager = userRepository.findByEmailIgnoreCase(DataLoader.MANAGER_EMAIL).orElseThrow();
-        slot = slotRepository.findAll().get(0);
+        slot = freeFutureSlots().get(0);
+    }
+
+    /** Free slots from tomorrow onwards (the demo data also has past slots with booking history). */
+    private List<Slot> freeFutureSlots() {
+        return slotRepository.findAll().stream()
+                .filter(s -> s.getDate().isAfter(LocalDate.now()))
+                .filter(s -> bookingService.takenSlotIds(List.of(s)).isEmpty())
+                .toList();
     }
 
     @Test
@@ -66,6 +74,26 @@ class BookingFlowTests {
         assertThatThrownBy(() -> bookingService.request(ravi, slot.getId()))
                 .isInstanceOf(BookingException.class)
                 .hasMessageContaining("already booked");
+    }
+
+    @Test
+    void pastSlotCannotBeBooked() {
+        Slot past = slotRepository.findAll().stream()
+                .filter(s -> s.getDate().isBefore(LocalDate.now()))
+                .findFirst().orElseThrow();
+
+        assertThatThrownBy(() -> bookingService.request(asha, past.getId()))
+                .isInstanceOf(BookingException.class)
+                .hasMessageContaining("Booking not possible");
+    }
+
+    @Test
+    void managerQueueIsFirstComeFirstServed() {
+        Booking first = bookingService.request(ravi, freeFutureSlots().get(1).getId());
+        Booking second = bookingService.request(asha, freeFutureSlots().get(0).getId());
+
+        assertThat(bookingService.pendingRequests()).extracting(Booking::getId)
+                .containsSubsequence(first.getId(), second.getId());
     }
 
     @Test
