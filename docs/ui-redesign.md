@@ -46,3 +46,38 @@ page footer ("Photo credits").
 
 See [`ss/ui-redesign/`](../ss/ui-redesign/): home, facilities, insights, past-date block, register,
 booking, my bookings, sign in, manager FCFS queue and the mobile view.
+
+## Part 2: Clear dashboards for the manager and the player
+
+### Manager dashboard (`Manager Dashboard` in the menu)
+
+The top row shows four clickable numbers: **requests waiting**, **bookings today**, **upcoming confirmed**
+and **court usage today**. Below them are four tabs:
+
+| Tab | What the manager can do |
+|-----|-------------------------|
+| **Requests** | The FCFS queue (#1 = oldest request). **Confirm** or **Reject** each request. Rejecting frees the slot. |
+| **Schedule** | A grid of **facility x time** for any day (Previous / Next / Today / pick a date). Each cell shows **Free**, **Past**, or the player's name with **REQUESTED** / **CONFIRMED**. |
+| **All bookings** | Every booking, with **filters** (player name or email, status, facility, date) and pages of 25. The manager can confirm, reject, or **cancel** an upcoming booking (e.g. for court maintenance). |
+| **Players** | Every registered player with phone, total bookings, confirmed, cancelled and last game, plus a **View bookings** link. |
+
+New status: **REJECTED** (the manager declined a request).
+
+### Player dashboard (`My Dashboard` in the menu)
+
+- A welcome card and four personal numbers: **upcoming games**, **games played**, **time on court**, **favourite sport**.
+- A **"Your next game"** card with the facility photo, date, time, place and a countdown (Today / Tomorrow / In N days).
+- **Upcoming** and **History** tabs. Upcoming bookings can be cancelled; past ones show **Played** and a **Book again** button.
+- A short legend explaining each status.
+
+Demo accounts: manager `manager@sports.local`, player with history `aarav@demo.local`.
+
+### Tests after Part 2
+
+| Suite | Count |
+|-------|-------|
+| Unit tests | **27** (new: reject frees slot, manager cancel, manager tabs render, player dashboard) |
+| Selenium UI tests | **5** |
+| **Total** | **32 / 32 passing** |
+
+Screenshots 11-18 in [`ss/ui-redesign/`](../ss/ui-redesign/) show both dashboards.

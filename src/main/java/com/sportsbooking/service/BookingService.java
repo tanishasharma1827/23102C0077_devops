@@ -56,6 +56,39 @@ public class BookingService {
         return booking;
     }
 
+    /** Manager turns down a requested booking; the slot becomes free again. */
+    @Transactional
+    public Booking reject(User manager, Long bookingId) {
+        requireManager(manager, "reject");
+        Booking booking = get(bookingId);
+        if (booking.getStatus() != BookingStatus.REQUESTED) {
+            throw new BookingException("Only REQUESTED bookings can be rejected");
+        }
+        booking.setStatus(BookingStatus.REJECTED);
+        return booking;
+    }
+
+    /** Manager cancels an upcoming booking (e.g. court maintenance); the slot becomes free again. */
+    @Transactional
+    public Booking cancelByManager(User manager, Long bookingId) {
+        requireManager(manager, "cancel");
+        Booking booking = get(bookingId);
+        if (!booking.isActive()) {
+            throw new BookingException("Only REQUESTED or CONFIRMED bookings can be cancelled");
+        }
+        if (booking.getSlot().isPast()) {
+            throw new BookingException("This slot has already been played and cannot be cancelled");
+        }
+        booking.setStatus(BookingStatus.CANCELLED);
+        return booking;
+    }
+
+    private static void requireManager(User user, String action) {
+        if (user == null || user.getRole() != Role.MANAGER) {
+            throw new BookingException("Only a facility manager can " + action + " bookings");
+        }
+    }
+
     /** US5: the player who made the booking cancels it; the slot becomes free again. */
     @Transactional
     public Booking cancel(User user, Long bookingId) {
@@ -63,8 +96,8 @@ public class BookingService {
         if (!booking.getUser().getId().equals(user.getId())) {
             throw new BookingException("You can only cancel your own bookings");
         }
-        if (booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new BookingException("This booking is already cancelled");
+        if (!booking.isActive()) {
+            throw new BookingException("This booking is already " + booking.getStatus().name().toLowerCase());
         }
         if (booking.getSlot().isPast()) {
             throw new BookingException("This slot has already been played and cannot be cancelled");
@@ -81,6 +114,21 @@ public class BookingService {
     /** Pending requests in first-come, first-served order (oldest request first). */
     public List<Booking> pendingRequests() {
         return bookingRepository.findByStatusOrderByCreatedAtAscIdAsc(BookingStatus.REQUESTED);
+    }
+
+    /** Every booking, newest slot first (manager "All bookings" tab). */
+    public List<Booking> allBookings() {
+        return bookingRepository.findAll().stream()
+                .sorted(java.util.Comparator.comparing((Booking b) -> b.getSlot().getStart()).reversed()
+                        .thenComparing(Booking::getId))
+                .toList();
+    }
+
+    /** Active bookings of a day, keyed by slot id (manager schedule grid). */
+    public java.util.Map<Long, Booking> activeBookingsOn(java.time.LocalDate date) {
+        return bookingRepository.findAll().stream()
+                .filter(b -> b.isActive() && b.getSlot().getDate().equals(date))
+                .collect(Collectors.toMap(b -> b.getSlot().getId(), b -> b, (a, b) -> a));
     }
 
     /** Ids of the given slots that are currently taken (used to mark slots as Booked). */

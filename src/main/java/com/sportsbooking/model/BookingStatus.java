@@ -1,8 +1,12 @@
 package com.sportsbooking.model;
 
-/** REQUESTED -> CONFIRMED (by manager); REQUESTED/CONFIRMED -> CANCELLED (by player). */
+/**
+ * REQUESTED -> CONFIRMED or REJECTED (by manager);
+ * REQUESTED/CONFIRMED -> CANCELLED (by the player, or by the manager).
+ */
 public enum BookingStatus {
     REQUESTED,
     CONFIRMED,
+    REJECTED,
     CANCELLED
 }

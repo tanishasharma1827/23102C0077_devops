@@ -26,7 +26,7 @@ public class StatsService {
 
     public record FacilityStat(Facility facility, long bookings, long slots, int utilisation) { }
 
-    public record Dashboard(long totalBookings, long confirmed, long requested, long cancelled, long players,
+    public record Dashboard(long totalBookings, long confirmed, long requested, long cancelled, long rejected, long players,
                             int utilisation, int cancellationRate, String busiestFacility, String peakHour,
                             List<Point> daily, List<Point> byHour, List<FacilityStat> facilities) { }
 
@@ -82,6 +82,7 @@ public class StatsService {
                 byStatus.getOrDefault(BookingStatus.CONFIRMED, 0L),
                 byStatus.getOrDefault(BookingStatus.REQUESTED, 0L),
                 cancelled,
+                byStatus.getOrDefault(BookingStatus.REJECTED, 0L),
                 userRepository.findAll().stream().filter(u -> u.getRole() == Role.PLAYER).count(),
                 percent(pastActive.size(), pastSlots.size()),
                 percent(cancelled, all.size()),

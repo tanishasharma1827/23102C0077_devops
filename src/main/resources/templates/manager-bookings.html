@@ -1,53 +1,257 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head th:replace="~{fragments :: head('Pending requests')}"></head>
+<head th:replace="~{fragments :: head('Manager dashboard')}"></head>
 <body>
 <nav th:replace="~{fragments :: nav}"></nav>
 <main>
     <div th:replace="~{fragments :: messages}"></div>
+
     <div class="page-head">
         <div>
             <div class="eyebrow">Manager</div>
-            <h2>Pending booking requests</h2>
-            <p>Requests are listed first come, first served: the oldest request is at the top.</p>
+            <h2>Manager dashboard</h2>
+            <p th:text="'Today is ' + ${#temporals.format(today, 'EEEE, d MMMM yyyy')} + '. Review requests, check the schedule and manage every booking.'">Today</p>
         </div>
         <a class="button outline" th:href="@{/stats}"><svg th:replace="~{fragments :: icon('chart')}"></svg>View insights</a>
     </div>
 
-    <div class="fcfs-note"><svg th:replace="~{fragments :: icon('bolt')}"></svg>
-        <span><b>FCFS queue:</b> <span th:text="${#lists.size(bookings)}">3</span> request(s) waiting. Please confirm them in order, starting from #1.</span></div>
+    <!-- Summary tiles -->
+    <section class="summary">
+        <a class="stat link-stat" th:href="@{/manager/bookings(tab='requests')}">
+            <span class="ic amber"><svg th:replace="~{fragments :: icon('inbox')}"></svg></span>
+            <div><div class="num" id="kpi-pending" th:text="${summary.pending}">3</div><div class="lbl">Requests waiting</div></div></a>
+        <a class="stat link-stat" th:href="@{/manager/bookings(tab='schedule')}">
+            <span class="ic blue"><svg th:replace="~{fragments :: icon('calendar')}"></svg></span>
+            <div><div class="num" th:text="${summary.todayBookings}">12</div><div class="lbl">Bookings today</div></div></a>
+        <a class="stat link-stat" th:href="@{/manager/bookings(tab='all', status='CONFIRMED')}">
+            <span class="ic green"><svg th:replace="~{fragments :: icon('check')}"></svg></span>
+            <div><div class="num" th:text="${summary.upcomingConfirmed}">8</div><div class="lbl">Upcoming confirmed</div></div></a>
+        <div class="stat">
+            <span class="ic red"><svg th:replace="~{fragments :: icon('percent')}"></svg></span>
+            <div><div class="num" th:text="${summary.todayUsage} + '%'">40%</div><div class="lbl">Court usage today</div></div></div>
+    </section>
 
-    <div class="table-card" th:if="${#lists.isEmpty(bookings)}">
-        <div class="empty"><svg th:replace="~{fragments :: icon('inbox')}"></svg>
-            <p id="no-requests">No pending requests.</p><p class="muted">New requests from players will appear here.</p></div>
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+        <a id="tab-requests" role="tab" th:classappend="${tab == 'requests'} ? 'active'" th:href="@{/manager/bookings(tab='requests')}">
+            <svg th:replace="~{fragments :: icon('inbox')}"></svg>Requests
+            <span class="count" th:classappend="${summary.pending > 0} ? 'hot'" th:text="${summary.pending}">3</span></a>
+        <a id="tab-schedule" role="tab" th:classappend="${tab == 'schedule'} ? 'active'" th:href="@{/manager/bookings(tab='schedule')}">
+            <svg th:replace="~{fragments :: icon('calendar')}"></svg>Schedule</a>
+        <a id="tab-all" role="tab" th:classappend="${tab == 'all'} ? 'active'" th:href="@{/manager/bookings(tab='all')}">
+            <svg th:replace="~{fragments :: icon('list')}"></svg>All bookings</a>
+        <a id="tab-players" role="tab" th:classappend="${tab == 'players'} ? 'active'" th:href="@{/manager/bookings(tab='players')}">
+            <svg th:replace="~{fragments :: icon('users')}"></svg>Players</a>
     </div>
-    <div class="table-card" th:unless="${#lists.isEmpty(bookings)}">
-        <div class="table-scroll">
-            <table id="requests-table">
-                <thead>
-                <tr><th>Queue</th><th>Player</th><th>Facility</th><th>Date</th><th>Time</th><th>Requested at</th><th>Action</th></tr>
-                </thead>
-                <tbody>
-                <tr th:each="b, it : ${bookings}" th:id="'request-' + ${b.id}">
-                    <td><span class="queue" th:classappend="${it.first} ? 'first'" th:text="${it.count}">1</span></td>
-                    <td><div class="fac-cell"><span class="avatar" th:text="${#strings.substring(b.user.name, 0, 1)}">A</span>
-                        <span th:text="${b.user.name}">Player</span></div></td>
-                    <td><div class="fac-cell">
-                        <span class="thumb" th:style="'background-image:url(' + @{${b.slot.facility.image}} + ')'"></span>
-                        <span th:text="${b.slot.facility.name}">Badminton Court 1</span></div></td>
-                    <td th:text="${#temporals.format(b.slot.date, 'EEE, d MMM')}">Thu, 15 Oct</td>
-                    <td class="time" th:text="${b.slot.label}">06:00 - 07:00</td>
-                    <td class="muted" th:text="${#temporals.format(b.createdAt, 'd MMM, HH:mm:ss')}">15 Oct, 10:42:13</td>
-                    <td>
-                        <form th:action="@{/bookings/{id}/confirm(id=${b.id})}" method="post" class="inline">
-                            <button th:id="'confirm-' + ${b.id}" type="submit" class="button small">Confirm</button>
-                        </form>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+
+    <!-- ============ Requests (FCFS queue) ============ -->
+    <section th:if="${tab == 'requests'}">
+        <div class="fcfs-note"><svg th:replace="~{fragments :: icon('bolt')}"></svg>
+            <span><b>First come, first served:</b> the oldest request is at the top (#1). Confirm it, or reject it to free the slot for others.</span></div>
+
+        <div class="table-card" th:if="${#lists.isEmpty(bookings)}">
+            <div class="empty"><svg th:replace="~{fragments :: icon('inbox')}"></svg>
+                <p id="no-requests">No pending requests.</p><p class="muted">New requests from players will appear here.</p></div>
         </div>
-    </div>
+        <div class="table-card" th:unless="${#lists.isEmpty(bookings)}">
+            <div class="table-scroll">
+                <table id="requests-table">
+                    <thead>
+                    <tr><th>Queue</th><th>Player</th><th>Facility</th><th>Date</th><th>Time</th><th>Requested at</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="b, it : ${bookings}" th:id="'request-' + ${b.id}">
+                        <td><span class="queue" th:classappend="${it.first} ? 'first'" th:text="${it.count}">1</span></td>
+                        <td><div class="fac-cell"><span class="avatar" th:text="${#strings.substring(b.user.name, 0, 1)}">A</span>
+                            <div><span th:text="${b.user.name}">Player</span><br><small class="muted" th:text="${b.user.email}">a@b.c</small></div></div></td>
+                        <td><div class="fac-cell">
+                            <span class="thumb" th:style="'background-image:url(' + @{${b.slot.facility.image}} + ')'"></span>
+                            <span th:text="${b.slot.facility.name}">Badminton Court 1</span></div></td>
+                        <td th:text="${#temporals.format(b.slot.date, 'EEE, d MMM')}">Thu, 15 Oct</td>
+                        <td class="time" th:text="${b.slot.label}">06:00 - 07:00</td>
+                        <td class="muted" th:text="${#temporals.format(b.createdAt, 'd MMM, HH:mm:ss')}">15 Oct, 10:42:13</td>
+                        <td class="actions">
+                            <form th:action="@{/bookings/{id}/confirm(id=${b.id})}" method="post" class="inline">
+                                <input type="hidden" name="back" th:value="${back}">
+                                <button th:id="'confirm-' + ${b.id}" type="submit" class="button small">Confirm</button>
+                            </form>
+                            <form th:action="@{/bookings/{id}/reject(id=${b.id})}" method="post" class="inline">
+                                <input type="hidden" name="back" th:value="${back}">
+                                <button th:id="'reject-' + ${b.id}" type="submit" class="button small danger">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ Schedule grid ============ -->
+    <section th:if="${tab == 'schedule'}" th:with="d=${schedule.date}">
+        <div class="toolbar">
+            <div class="day-nav">
+                <a class="button small outline" th:href="@{/manager/bookings(tab='schedule', date=${d.minusDays(1)})}">&larr; Previous</a>
+                <strong th:text="${#temporals.format(d, 'EEEE, d MMMM yyyy')}">Monday</strong>
+                <a class="button small outline" th:href="@{/manager/bookings(tab='schedule', date=${d.plusDays(1)})}">Next &rarr;</a>
+                <a class="button small" th:unless="${d == today}" th:href="@{/manager/bookings(tab='schedule')}">Today</a>
+            </div>
+            <form th:action="@{/manager/bookings}" method="get" class="inline-form">
+                <input type="hidden" name="tab" value="schedule">
+                <label for="schedule-date">Go to</label>
+                <input id="schedule-date" type="date" name="date" th:value="${d}">
+                <button type="submit" class="button small">Show</button>
+            </form>
+        </div>
+
+        <div class="legend">
+            <span><span class="pill available">Free</span></span>
+            <span><span class="pill requested">Requested</span></span>
+            <span><span class="pill confirmed">Confirmed</span></span>
+            <span><span class="pill past">Past</span></span>
+            <span class="muted" th:text="${schedule.booked} + ' booked, ' + ${schedule.free} + ' free'">10 booked, 38 free</span>
+        </div>
+
+        <div class="table-card" th:if="${#lists.isEmpty(schedule.hours)}">
+            <div class="empty"><svg th:replace="~{fragments :: icon('calendar')}"></svg><p>No slots on this day.</p></div>
+        </div>
+        <div class="table-card" th:unless="${#lists.isEmpty(schedule.hours)}">
+            <div class="table-scroll">
+                <table id="schedule-grid" class="grid-table">
+                    <thead>
+                    <tr><th>Facility</th><th th:each="h : ${schedule.hours}" th:text="${h}">06:00</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${schedule.rows}">
+                        <td><div class="fac-cell">
+                            <span class="thumb" th:style="'background-image:url(' + @{${row.facility.image}} + ')'"></span>
+                            <span th:text="${row.facility.name}">Turf</span></div></td>
+                        <td th:each="c : ${row.cells}">
+                            <div th:if="${c.booking != null}" class="cell"
+                                 th:classappend="${#strings.toLowerCase(c.booking.status)}"
+                                 th:title="${c.booking.user.name} + ' | ' + ${c.slot.label} + ' | ' + ${c.booking.status}">
+                                <b th:text="${#strings.arraySplit(c.booking.user.name, ' ')[0]}">Aarav</b>
+                                <small th:text="${c.booking.status}">CONFIRMED</small>
+                            </div>
+                            <div th:if="${c.booking == null}" class="cell" th:classappend="${c.past} ? 'past' : 'free'">
+                                <small th:text="${c.past} ? 'Past' : 'Free'">Free</small>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ All bookings ============ -->
+    <section th:if="${tab == 'all'}">
+        <form id="filter-form" class="filters" th:action="@{/manager/bookings}" method="get">
+            <input type="hidden" name="tab" value="all">
+            <div class="field">
+                <label for="f-q">Player</label>
+                <input id="f-q" type="text" name="q" th:value="${fQuery}" placeholder="Name or email">
+            </div>
+            <div class="field">
+                <label for="f-status">Status</label>
+                <select id="f-status" name="status">
+                    <option value="">All statuses</option>
+                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st.name() == fStatus}">CONFIRMED</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="f-facility">Facility</label>
+                <select id="f-facility" name="facilityId">
+                    <option value="">All facilities</option>
+                    <option th:each="f : ${facilities}" th:value="${f.id}" th:text="${f.name}" th:selected="${f.id == fFacility}">Turf</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="f-date">Date</label>
+                <input id="f-date" type="date" name="date" th:value="${fDate}">
+            </div>
+            <div class="field buttons">
+                <button id="filter-submit" type="submit" class="button small">Apply</button>
+                <a class="button small outline" th:href="@{/manager/bookings(tab='all')}">Reset</a>
+            </div>
+        </form>
+
+        <p class="muted results-count" th:text="${total} + ' booking(s) found' + (${pages > 1} ? ' (page ' + ${page} + ' of ' + ${pages} + ')' : '')">120 booking(s) found</p>
+
+        <div class="table-card" th:if="${#lists.isEmpty(results)}">
+            <div class="empty"><svg th:replace="~{fragments :: icon('list')}"></svg><p>No bookings match these filters.</p></div>
+        </div>
+        <div class="table-card" th:unless="${#lists.isEmpty(results)}">
+            <div class="table-scroll">
+                <table id="all-bookings-table">
+                    <thead>
+                    <tr><th>Player</th><th>Facility</th><th>Date</th><th>Time</th><th>Status</th><th>Booked at</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="b : ${results}" th:id="'all-' + ${b.id}">
+                        <td><div class="fac-cell"><span class="avatar" th:text="${#strings.substring(b.user.name, 0, 1)}">A</span>
+                            <span th:text="${b.user.name}">Player</span></div></td>
+                        <td th:text="${b.slot.facility.name}">Turf</td>
+                        <td th:text="${#temporals.format(b.slot.date, 'd MMM yy')}">15 Oct 26</td>
+                        <td class="time" th:text="${b.slot.label}">06:00 - 07:00</td>
+                        <td><span class="pill" th:classappend="${#strings.toLowerCase(b.status)}" th:text="${b.status}">CONFIRMED</span></td>
+                        <td class="muted" th:text="${#temporals.format(b.createdAt, 'd MMM, HH:mm')}">14 Oct, 10:42</td>
+                        <td class="actions">
+                            <th:block th:if="${!b.slot.past}">
+                                <form th:if="${b.status.name() == 'REQUESTED'}" th:action="@{/bookings/{id}/confirm(id=${b.id})}" method="post" class="inline">
+                                    <input type="hidden" name="back" th:value="${back}">
+                                    <button type="submit" class="button small">Confirm</button>
+                                </form>
+                                <form th:if="${b.status.name() == 'REQUESTED'}" th:action="@{/bookings/{id}/reject(id=${b.id})}" method="post" class="inline">
+                                    <input type="hidden" name="back" th:value="${back}">
+                                    <button type="submit" class="button small danger">Reject</button>
+                                </form>
+                                <form th:if="${b.status.name() == 'CONFIRMED'}" th:action="@{/manager/bookings/{id}/cancel(id=${b.id})}" method="post" class="inline">
+                                    <input type="hidden" name="back" th:value="${back}">
+                                    <button th:id="'mgr-cancel-' + ${b.id}" type="submit" class="button small danger">Cancel</button>
+                                </form>
+                            </th:block>
+                            <span th:if="${b.slot.past and b.active}" class="muted">Played</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="pager" th:if="${tab == 'all' and pages > 1}">
+            <a class="button small outline" th:if="${page > 1}"
+               th:href="@{/manager/bookings(tab='all', q=${fQuery}, status=${fStatus}, facilityId=${fFacility}, date=${fDate}, page=${page - 1})}">&larr; Newer</a>
+            <span class="muted" th:text="'Page ' + ${page} + ' of ' + ${pages}">Page 1 of 4</span>
+            <a class="button small outline" th:if="${page < pages}"
+               th:href="@{/manager/bookings(tab='all', q=${fQuery}, status=${fStatus}, facilityId=${fFacility}, date=${fDate}, page=${page + 1})}">Older &rarr;</a>
+        </div>
+    </section>
+
+    <!-- ============ Players ============ -->
+    <section th:if="${tab == 'players'}">
+        <div class="table-card">
+            <div class="table-scroll">
+                <table id="players-table">
+                    <thead>
+                    <tr><th>Player</th><th>Phone</th><th>Bookings</th><th>Confirmed</th><th>Cancelled</th><th>Last game</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${players}">
+                        <td><div class="fac-cell"><span class="avatar" th:text="${#strings.substring(p.user.name, 0, 1)}">A</span>
+                            <div><span th:text="${p.user.name}">Aarav</span><br><small class="muted" th:text="${p.user.email}">a@b.c</small></div></div></td>
+                        <td th:text="${p.user.phone}">9810000001</td>
+                        <td><b th:text="${p.total}">20</b></td>
+                        <td th:text="${p.confirmed}">17</td>
+                        <td th:text="${p.cancelled}">2</td>
+                        <td th:text="${p.lastGame != null} ? ${#temporals.format(p.lastGame, 'd MMM yyyy')} : '-'">14 Oct 2026</td>
+                        <td><a class="button small outline" th:href="@{/manager/bookings(tab='all', q=${p.user.email})}">View bookings</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </main>
 <footer th:replace="~{fragments :: footer}"></footer>
 </body>

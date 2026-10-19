@@ -145,6 +145,59 @@ class BookingFlowTests {
     }
 
     @Test
+    void managerRejectsRequestAndSlotIsFreeAgain() {
+        Booking booking = bookingService.request(asha, slot.getId());
+
+        assertThat(bookingService.reject(manager, booking.getId()).getStatus()).isEqualTo(BookingStatus.REJECTED);
+        assertThat(bookingService.takenSlotIds(List.of(slot))).isEmpty();
+        assertThatThrownBy(() -> bookingService.reject(ravi, booking.getId()))
+                .hasMessageContaining("Only a facility manager");
+    }
+
+    @Test
+    void managerCanCancelAConfirmedBooking() {
+        Booking booking = bookingService.request(asha, slot.getId());
+        bookingService.confirm(manager, booking.getId());
+
+        assertThat(bookingService.cancelByManager(manager, booking.getId()).getStatus()).isEqualTo(BookingStatus.CANCELLED);
+        assertThat(bookingService.takenSlotIds(List.of(slot))).isEmpty();
+    }
+
+    @Test
+    void managerDashboardTabsRender() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(UserController.SESSION_USER, manager.getId());
+        bookingService.request(asha, slot.getId());
+
+        mockMvc.perform(get("/manager/bookings").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("requests-table")))
+                .andExpect(content().string(containsString("Asha")));
+        mockMvc.perform(get("/manager/bookings").param("tab", "schedule").session(session))
+                .andExpect(content().string(containsString("schedule-grid")));
+        mockMvc.perform(get("/manager/bookings").param("tab", "all").param("q", "asha").session(session))
+                .andExpect(content().string(containsString("all-bookings-table")))
+                .andExpect(content().string(containsString("1 booking(s) found")));
+        mockMvc.perform(get("/manager/bookings").param("tab", "players").session(session))
+                .andExpect(content().string(containsString("players-table")));
+    }
+
+    @Test
+    void playerDashboardShowsNextGameAndTabs() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(UserController.SESSION_USER, asha.getId());
+        bookingService.request(asha, slot.getId());
+
+        mockMvc.perform(get("/bookings/my").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Your next game")))
+                .andExpect(content().string(containsString("bookings-table")));
+        mockMvc.perform(get("/bookings/my").param("tab", "history").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("No past games yet")));
+    }
+
+    @Test
     void managerPageIsProtected() throws Exception {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(UserController.SESSION_USER, asha.getId());
