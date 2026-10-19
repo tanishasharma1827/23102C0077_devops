@@ -44,7 +44,8 @@ public class Booking {
     public void setStatus(BookingStatus status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
+    /** Requested or confirmed: the booking still holds its slot. */
     public boolean isActive() {
-        return status != BookingStatus.CANCELLED;
+        return status == BookingStatus.REQUESTED || status == BookingStatus.CONFIRMED;
     }
 }
