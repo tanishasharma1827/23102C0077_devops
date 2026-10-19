@@ -1,10 +1,10 @@
 package com.sportsbooking.controller;
 
 import com.sportsbooking.model.Booking;
-import com.sportsbooking.model.Role;
 import com.sportsbooking.model.User;
 import com.sportsbooking.service.BookingException;
 import com.sportsbooking.service.BookingService;
+import com.sportsbooking.service.DashboardService;
 import com.sportsbooking.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -12,16 +12,19 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/** Booking request, confirmation, cancellation and status tracking (US3-US6). */
+/** Player side: booking request, cancellation and the player dashboard (US3, US5, US6). */
 @Controller
 public class BookingController {
 
     private final BookingService bookingService;
     private final UserService userService;
+    private final DashboardService dashboardService;
 
-    public BookingController(BookingService bookingService, UserService userService) {
+    public BookingController(BookingService bookingService, UserService userService,
+                             DashboardService dashboardService) {
         this.bookingService = bookingService;
         this.userService = userService;
+        this.dashboardService = dashboardService;
     }
 
     private User signedIn(HttpSession session) {
@@ -48,14 +51,22 @@ public class BookingController {
     }
 
     @GetMapping("/bookings/my")
-    public String myBookings(HttpSession session, Model model,
+    public String myBookings(@RequestParam(required = false) String tab, HttpSession session, Model model,
                              RedirectAttributes redirect) {
         User currentUser = signedIn(session);
         if (currentUser == null) {
             redirect.addFlashAttribute("error", "Please sign in to see your bookings.");
             return "redirect:/signin";
         }
-        model.addAttribute("bookings", bookingService.bookingsOf(currentUser));
+        DashboardService.PlayerDashboard dashboard = dashboardService.playerDashboard(currentUser);
+        String view = "history".equals(tab) ? "history" : "upcoming";
+        model.addAttribute("dash", dashboard);
+        if (dashboard.nextGame() != null) {
+            model.addAttribute("daysToNext", java.time.temporal.ChronoUnit.DAYS.between(
+                    java.time.LocalDate.now(), dashboard.nextGame().getSlot().getDate()));
+        }
+        model.addAttribute("tab", view);
+        model.addAttribute("bookings", view.equals("history") ? dashboard.history() : dashboard.upcoming());
         return "my-bookings";
     }
 
@@ -73,33 +84,5 @@ public class BookingController {
             redirect.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/bookings/my";
-    }
-
-    @GetMapping("/manager/bookings")
-    public String managerBookings(HttpSession session, Model model,
-                                  RedirectAttributes redirect) {
-        User currentUser = signedIn(session);
-        if (currentUser == null || currentUser.getRole() != Role.MANAGER) {
-            redirect.addFlashAttribute("error", "Manager access only. Sign in as the facility manager.");
-            return "redirect:/signin";
-        }
-        model.addAttribute("bookings", bookingService.pendingRequests());
-        return "manager-bookings";
-    }
-
-    @PostMapping("/bookings/{id}/confirm")
-    public String confirm(@PathVariable Long id, HttpSession session,
-                          RedirectAttributes redirect) {
-        User currentUser = signedIn(session);
-        if (currentUser == null) {
-            return "redirect:/signin";
-        }
-        try {
-            bookingService.confirm(currentUser, id);
-            redirect.addFlashAttribute("message", "Booking #" + id + " confirmed.");
-        } catch (BookingException e) {
-            redirect.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/manager/bookings";
     }
 }

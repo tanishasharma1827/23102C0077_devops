@@ -84,13 +84,31 @@ public class DataLoader implements CommandLineRunner {
             int hour = slot.getStartTime().getHour();
             double chance = (hour >= 17 ? 0.70 : 0.35) + popularity(slot.getFacility().getType());
             if (random.nextDouble() < chance) {
-                BookingStatus status = random.nextDouble() < 0.12 ? BookingStatus.CANCELLED : BookingStatus.CONFIRMED;
+                double roll = random.nextDouble();
+                BookingStatus status = roll < 0.10 ? BookingStatus.CANCELLED
+                        : roll < 0.14 ? BookingStatus.REJECTED : BookingStatus.CONFIRMED;
                 User player = players.get(random.nextInt(players.size()));
                 history.add(new Booking(player, slot, status,
                         slot.getStart().minusDays(1 + random.nextInt(3)).minusMinutes(random.nextInt(600))));
             }
         }
         bookingRepository.saveAll(history);
+
+        // A few upcoming bookings on the last three facilities, so the manager queue and the
+        // player dashboard are not empty in a demo. Courts 1-3 stay free for the Selenium tests.
+        List<Booking> upcoming = new ArrayList<>();
+        int n = 0;
+        for (Slot slot : slots) {
+            boolean demoFacility = slot.getFacility().getId() > facilities.get(2).getId();
+            boolean soon = !slot.isPast() && !slot.getDate().isAfter(today.plusDays(3));
+            if (demoFacility && soon && slot.getStartTime().getHour() >= 17 && random.nextDouble() < 0.35) {
+                BookingStatus status = n % 3 == 0 ? BookingStatus.REQUESTED : BookingStatus.CONFIRMED;
+                upcoming.add(new Booking(players.get(n % players.size()), slot, status,
+                        java.time.LocalDateTime.now().minusHours(20 - n).minusMinutes(7L * n)));
+                n++;
+            }
+        }
+        bookingRepository.saveAll(upcoming);
     }
 
     private static double popularity(String type) {

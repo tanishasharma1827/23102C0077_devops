@@ -42,8 +42,8 @@
     </a>
     <a id="nav-home" th:href="@{/}">Home</a>
     <a id="nav-facilities" th:href="@{/facilities}"><svg th:replace="~{fragments :: icon('calendar')}"></svg>Book a Slot</a>
-    <a id="nav-my-bookings" th:if="${currentUser != null}" th:href="@{/bookings/my}"><svg th:replace="~{fragments :: icon('list')}"></svg>My Reservations</a>
-    <a id="nav-manager" th:if="${currentUser != null and currentUser.role.name() == 'MANAGER'}" th:href="@{/manager/bookings}"><svg th:replace="~{fragments :: icon('inbox')}"></svg>Manager</a>
+    <a id="nav-my-bookings" th:if="${currentUser != null and currentUser.role.name() != 'MANAGER'}" th:href="@{/bookings/my}"><svg th:replace="~{fragments :: icon('user')}"></svg>My Dashboard</a>
+    <a id="nav-manager" th:if="${currentUser != null and currentUser.role.name() == 'MANAGER'}" th:href="@{/manager/bookings}"><svg th:replace="~{fragments :: icon('inbox')}"></svg>Manager Dashboard</a>
     <a id="nav-stats" th:href="@{/stats}"><svg th:replace="~{fragments :: icon('chart')}"></svg>Insights</a>
     <span class="spacer"></span>
     <th:block th:if="${currentUser == null}">

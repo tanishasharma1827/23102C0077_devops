@@ -62,11 +62,13 @@
                 <span class="m-confirmed" th:style="'width:' + ${100.0 * stats.confirmed / t} + '%'" th:title="'Confirmed: ' + ${stats.confirmed}"></span>
                 <span class="m-requested" th:style="'width:' + ${100.0 * stats.requested / t} + '%'" th:title="'Requested: ' + ${stats.requested}"></span>
                 <span class="m-cancelled" th:style="'width:' + ${100.0 * stats.cancelled / t} + '%'" th:title="'Cancelled: ' + ${stats.cancelled}"></span>
+                <span class="m-rejected" th:style="'width:' + ${100.0 * stats.rejected / t} + '%'" th:title="'Rejected: ' + ${stats.rejected}"></span>
             </div>
             <div class="keys">
                 <div class="key"><span class="sw" style="background:#1baf7a"></span><svg th:replace="~{fragments :: icon('check')}"></svg>Confirmed<b th:text="${stats.confirmed}">350</b></div>
                 <div class="key"><span class="sw" style="background:#eda100"></span><svg th:replace="~{fragments :: icon('clock')}"></svg>Waiting for manager<b th:text="${stats.requested}">5</b></div>
                 <div class="key"><span class="sw" style="background:#e34948"></span><svg th:replace="~{fragments :: icon('ban')}"></svg>Cancelled<b th:text="${stats.cancelled}">40</b></div>
+                <div class="key"><span class="sw" style="background:#6250d6"></span><svg th:replace="~{fragments :: icon('alert')}"></svg>Rejected by manager<b th:text="${stats.rejected}">10</b></div>
             </div>
         </section>
 

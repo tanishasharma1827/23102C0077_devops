@@ -5,27 +5,63 @@
 <nav th:replace="~{fragments :: nav}"></nav>
 <main>
     <div th:replace="~{fragments :: messages}"></div>
-    <div class="page-head">
-        <div>
-            <div class="eyebrow">My reservations</div>
-            <h2>My bookings</h2>
-            <p>Track the status of every request. Cancelling frees the slot for the next player.</p>
-        </div>
-        <a class="button" th:href="@{/facilities}"><svg th:replace="~{fragments :: icon('calendar')}"></svg>Book another slot</a>
-    </div>
 
-    <div class="summary" th:unless="${#lists.isEmpty(bookings)}">
-        <div class="stat"><span class="ic amber"><svg th:replace="~{fragments :: icon('clock')}"></svg></span>
-            <div><div class="num" th:text="${#lists.size(bookings.?[status.name() == 'REQUESTED'])}">1</div><div class="lbl">Waiting for manager</div></div></div>
+    <!-- Welcome -->
+    <section class="welcome">
+        <div class="fac-cell">
+            <span class="avatar big" th:text="${#strings.substring(currentUser.name, 0, 1)}">R</span>
+            <div>
+                <div class="eyebrow">My dashboard</div>
+                <h2 th:text="'Welcome back, ' + ${#strings.arraySplit(currentUser.name, ' ')[0]}">Welcome back, Riya</h2>
+                <p class="muted">Your games, requests and history in one place.</p>
+            </div>
+        </div>
+        <a id="book-another" class="button accent" th:href="@{/facilities}"><svg th:replace="~{fragments :: icon('calendar')}"></svg>Book a slot</a>
+    </section>
+
+    <!-- Personal stats -->
+    <section class="summary">
+        <div class="stat"><span class="ic blue"><svg th:replace="~{fragments :: icon('calendar')}"></svg></span>
+            <div><div class="num" th:text="${dash.upcomingActive}">2</div><div class="lbl">Upcoming games</div></div></div>
         <div class="stat"><span class="ic green"><svg th:replace="~{fragments :: icon('check')}"></svg></span>
-            <div><div class="num" th:text="${#lists.size(bookings.?[status.name() == 'CONFIRMED'])}">2</div><div class="lbl">Confirmed</div></div></div>
-        <div class="stat"><span class="ic red"><svg th:replace="~{fragments :: icon('ban')}"></svg></span>
-            <div><div class="num" th:text="${#lists.size(bookings.?[status.name() == 'CANCELLED'])}">0</div><div class="lbl">Cancelled</div></div></div>
+            <div><div class="num" th:text="${dash.gamesPlayed}">14</div><div class="lbl">Games played</div></div></div>
+        <div class="stat"><span class="ic amber"><svg th:replace="~{fragments :: icon('clock')}"></svg></span>
+            <div><div class="num" th:text="${dash.gamesPlayed} + ' h'">14 h</div><div class="lbl">Time on court</div></div></div>
+        <div class="stat"><span class="ic red"><svg th:replace="~{fragments :: icon('ball')}"></svg></span>
+            <div><div class="num small-num" th:text="${dash.favouriteSport}">Football</div><div class="lbl">Favourite sport</div></div></div>
+    </section>
+
+    <!-- Next game -->
+    <section id="next-game" class="next-game" th:if="${dash.nextGame != null}" th:with="g=${dash.nextGame}"
+             th:style="'background-image:url(' + @{${g.slot.facility.image}} + ')'">
+        <div>
+            <div class="eyebrow light">Your next game</div>
+            <h3 th:text="${g.slot.facility.name}">Football Turf</h3>
+            <div class="meta">
+                <span><svg th:replace="~{fragments :: icon('calendar')}"></svg><span th:text="${#temporals.format(g.slot.date, 'EEEE, d MMMM')}">Friday</span></span>
+                <span><svg th:replace="~{fragments :: icon('clock')}"></svg><span th:text="${g.slot.label}">18:00 - 19:00</span></span>
+                <span><svg th:replace="~{fragments :: icon('pin')}"></svg><span th:text="${g.slot.facility.location}">Main Ground</span></span>
+            </div>
+        </div>
+        <div class="countdown">
+            <b th:text="${daysToNext == 0} ? 'Today' : (${daysToNext == 1} ? 'Tomorrow' : 'In ' + ${daysToNext} + ' days')">Tomorrow</b>
+            <span class="pill" th:classappend="${#strings.toLowerCase(g.status)}" th:text="${g.status}">CONFIRMED</span>
+            <small th:if="${g.status.name() == 'REQUESTED'}">Waiting for the manager to confirm</small>
+        </div>
+    </section>
+
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+        <a id="tab-upcoming" role="tab" th:classappend="${tab == 'upcoming'} ? 'active'" th:href="@{/bookings/my}">
+            <svg th:replace="~{fragments :: icon('calendar')}"></svg>Upcoming<span class="count" th:text="${#lists.size(dash.upcoming)}">2</span></a>
+        <a id="tab-history" role="tab" th:classappend="${tab == 'history'} ? 'active'" th:href="@{/bookings/my(tab='history')}">
+            <svg th:replace="~{fragments :: icon('list')}"></svg>History<span class="count" th:text="${#lists.size(dash.history)}">14</span></a>
     </div>
 
     <div class="table-card" th:if="${#lists.isEmpty(bookings)}">
         <div class="empty"><svg th:replace="~{fragments :: icon('calendar')}"></svg>
-            <p id="no-bookings">You have no bookings yet. <a th:href="@{/facilities}">Book a slot</a></p></div>
+            <p id="no-bookings" th:if="${tab == 'upcoming'}">You have no upcoming bookings. <a th:href="@{/facilities}">Book a slot</a></p>
+            <p th:if="${tab == 'history'}">No past games yet. Your played and cancelled games will appear here.</p></div>
     </div>
     <div class="table-card" th:unless="${#lists.isEmpty(bookings)}">
         <div class="table-scroll">
@@ -42,17 +78,22 @@
                     <td th:text="${#temporals.format(b.slot.date, 'EEE, d MMM yyyy')}">Thu, 15 Oct 2026</td>
                     <td class="time" th:text="${b.slot.label}">06:00 - 07:00</td>
                     <td><span th:id="'status-' + ${b.id}" class="pill status" th:classappend="${#strings.toLowerCase(b.status)}" th:text="${b.status}">REQUESTED</span></td>
-                    <td>
+                    <td class="actions">
                         <form th:if="${b.active and !b.slot.past}" th:action="@{/bookings/{id}/cancel(id=${b.id})}" method="post" class="inline">
                             <button th:id="'cancel-' + ${b.id}" type="submit" class="button small danger">Cancel</button>
                         </form>
-                        <span th:if="${b.active and b.slot.past}" class="muted">Played</span>
+                        <span th:if="${b.active and b.slot.past}" class="played"><svg th:replace="~{fragments :: icon('check')}"></svg>Played</span>
+                        <a th:if="${b.slot.past or !b.active}" class="button small outline"
+                           th:href="@{/slots(facilityId=${b.slot.facility.id})}">Book again</a>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <p class="muted status-help"><b>REQUESTED</b> = waiting for the manager &middot; <b>CONFIRMED</b> = your slot is booked &middot;
+        <b>REJECTED</b> = the manager declined it &middot; <b>CANCELLED</b> = cancelled, slot is free again</p>
 </main>
 <footer th:replace="~{fragments :: footer}"></footer>
 </body>
