@@ -24,6 +24,8 @@ This folder has one document for each task. Read them in order.
 | 13 | Configuration Management Script | [task-13-configuration-management.md](task-13-configuration-management.md) | Done |
 | 14 | Automated Provisioning and Reliability Validation | [task-14-provisioning-reliability.md](task-14-provisioning-reliability.md) | Done |
 
+**Viva preparation:** [viva.md](viva.md): everything explained simply, with a question bank.
+
 **Extra improvement:** [ui-redesign.md](ui-redesign.md): new attractive UI, FCFS queue, Insights charts and the past-date rule.
 
 ## How to read the diagrams
